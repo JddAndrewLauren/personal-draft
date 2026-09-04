@@ -146,6 +146,23 @@ on each recommendation, and a line in "Why?"); they do not change the score.
 
 Do all of this well before draft day and run at least one Yahoo mock draft with the app open.
 
+## Draft day without API access (Claude in Chrome watches the draft room)
+
+If the Yahoo application is not approved by draft day, Claude Code can read the draft room page
+itself and feed picks to the app. Nothing Yahoo-specific is required.
+
+1. Open the Yahoo draft room in Chrome (logged in, Claude in Chrome extension enabled for the site).
+2. `streamlit run app.py`. In the sidebar under **Draft room (Claude in Chrome)** toggle
+   **Watch scrape feed** and enter **My team name** exactly as the draft room shows it.
+3. In Claude Code, from the repo root, run `/loop 30s /watch-draft`. Every 30 s Claude reads the
+   draft results off the page and writes `scrape/picks.json` (via `write_picks.py`). The app
+   polls that file, appends new picks, confirms manual picks, and raises the same **SYNC WARNING**
+   on disagreement. Your draft slot auto-corrects from round 1 once your team name appears.
+4. If the app shows "feed is stale", the loop has stopped: re-run the `/loop` command. Manual
+   picks keep working throughout.
+
+Rehearse in a Yahoo **mock draft** first: mock rooms are available any time and use the same page.
+
 ## Testing and replay
 
 ```bash

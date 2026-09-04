@@ -86,6 +86,21 @@ def make_player_id(name: str, position: str) -> str:
     return f"{normalize_name(name)}|{normalize_position(position)}"
 
 
+def resolve_player(players, name: str, position: str, team: Optional[str] = None):
+    """Find a Player by name + position (and NFL team when ids are disambiguated), else None."""
+    pid = make_player_id(name, position)
+    by_id = {p.player_id: p for p in players}
+    if pid in by_id:
+        return by_id[pid]
+    cands = [p for p in players if p.player_id.startswith(pid + "|")]   # name|pos|team ids
+    if team:
+        t = str(team).strip().upper()
+        for p in cands:
+            if (p.team or "").upper() == t:
+                return p
+    return cands[0] if cands else None
+
+
 # --------------------------------------------------------------------------- #
 # Dataclasses
 # --------------------------------------------------------------------------- #
@@ -203,6 +218,7 @@ class SyncConflict:
     yahoo_player_id: str
     local_player_name: Optional[str] = None
     yahoo_player_name: Optional[str] = None
+    source: str = "yahoo"        # where the remote pick came from: "yahoo" | "scrape"
 
 
 @dataclass
@@ -376,10 +392,10 @@ class DraftState:
         return out
 
     # ---- Yahoo merge ------------------------------------------------------ #
-    def merge_yahoo(self, yahoo_picks: Iterable[DraftPick]) -> tuple:
-        """Merge picks reported by Yahoo into local state.
+    def merge_yahoo(self, yahoo_picks: Iterable[DraftPick], source: str = "yahoo") -> tuple:
+        """Merge picks reported by a remote source (Yahoo API or draft-room scrape) into local state.
 
-        * Pick numbers the local state has not seen are appended (source="yahoo").
+        * Pick numbers the local state has not seen are appended (source=``source``).
         * A local pick with the same player is marked confirmed.
         * A local pick with a different player becomes a SyncConflict; local state
           is never overwritten silently.
@@ -399,13 +415,14 @@ class DraftState:
                         c = SyncConflict(pick=lp.pick, local_player_id=lp.player_id,
                                          yahoo_player_id="(pick %d)" % yp.pick,
                                          local_player_name=lp.player_name,
-                                         yahoo_player_name=f"{yp.player_name} reported at pick {yp.pick}")
+                                         yahoo_player_name=f"{yp.player_name} reported at pick {yp.pick}",
+                                         source=source)
                         self.conflicts.append(c)
                         new_conflicts.append(c)
                         existing_conflicts.add(lp.pick)
                     continue
                 dp = DraftPick(pick=yp.pick, round=self.round_of(yp.pick), slot=yp.slot,
-                               player_id=yp.player_id, source="yahoo", confirmed=True,
+                               player_id=yp.player_id, source=source, confirmed=True,
                                team_key=yp.team_key, player_name=yp.player_name,
                                yahoo_player_id=yp.yahoo_player_id)
                 self.picks.append(dp)
@@ -421,7 +438,7 @@ class DraftState:
                     c = SyncConflict(pick=yp.pick, local_player_id=local.player_id,
                                      yahoo_player_id=yp.player_id,
                                      local_player_name=local.player_name,
-                                     yahoo_player_name=yp.player_name)
+                                     yahoo_player_name=yp.player_name, source=source)
                     self.conflicts.append(c)
                     new_conflicts.append(c)
                     existing_conflicts.add(yp.pick)
@@ -437,7 +454,7 @@ class DraftState:
             if local is not None:
                 local.player_id = conflict.yahoo_player_id
                 local.player_name = conflict.yahoo_player_name
-                local.source = "yahoo"
+                local.source = conflict.source
                 local.confirmed = True
         elif keep == "local":
             local = self.pick_by_number(pick)

@@ -5,6 +5,7 @@
 # runtime state
 draft_state.json
 draft_state.json.tmp
+/scrape/
 snapshots/
 fantasy-draft.log
 data/yahoo_players.csv

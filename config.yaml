@@ -68,6 +68,7 @@ paths:
   mappings_csv: data/player_mappings.csv
   yahoo_players_csv: data/yahoo_players.csv
   draft_state: draft_state.json
+  scrape_picks: scrape/picks.json     # draft-room feed written by /watch-draft (Claude in Chrome)
   snapshots_dir: snapshots
   log_file: fantasy-draft.log
   token_file: .yahoo_token.json

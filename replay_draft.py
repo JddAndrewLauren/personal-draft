@@ -25,7 +25,7 @@ from models import (
     default_teams,
     load_config,
     load_players,
-    make_player_id,
+    resolve_player,
     settings_from_config,
 )
 from optimizer import merge_config, prepare_players, recommend
@@ -35,15 +35,8 @@ def load_draft(path) -> dict:
     return json.loads(Path(path).read_text())
 
 
-def resolve(players, name, position) -> object:
-    pid = make_player_id(name, position)
-    by_id = {p.player_id: p for p in players}
-    if pid in by_id:
-        return by_id[pid]
-    for p in players:                      # disambiguated ids (name|pos|team)
-        if p.player_id.startswith(pid + "|"):
-            return p
-    return None
+def resolve(players, name, position, team=None) -> object:
+    return resolve_player(players, name, position, team)
 
 
 def replay(draft: dict, players: list, cfg: dict, user_slot=None, show_all=False, out=sys.stdout) -> dict:

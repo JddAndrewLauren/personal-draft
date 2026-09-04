@@ -18,6 +18,7 @@ import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 
+import scrape as sc
 import yahoo as yh
 from models import (
     DraftState,
@@ -82,6 +83,11 @@ def init():
     ss().players = []
     ss().messages = []
     ss().yahoo = None
+    ss().scrape_enabled = False
+    ss().scrape_path = cfg["paths"].get("scrape_picks", "scrape/picks.json")
+    ss().scrape_team = ""
+    ss().scrape_teams = []
+    ss().scrape_updated = 0.0
     ss().yahoo_league_key = os.environ.get("YAHOO_LEAGUE_KEY") or None
     ss().yahoo_leagues = []
     ss().yahoo_players = yh.load_yahoo_players(cfg["paths"]["yahoo_players_csv"])
@@ -233,6 +239,51 @@ def yahoo_sync(manual: bool = False) -> dict:
     return result
 
 
+def scrape_sync(manual: bool = False) -> dict:
+    """Merge picks from the draft-room scrape feed (scrape/picks.json). Never raises."""
+    state: DraftState = ss().state
+    result = {"new": 0, "conflicts": 0, "error": None}
+    try:
+        feed = sc.load_picks(ss().scrape_path)
+        rows = feed["picks"]
+        if not manual and feed["updated"] and feed["updated"] == ss().scrape_updated:
+            return result
+        ss().scrape_updated = feed["updated"]
+        ss().scrape_teams = sorted({r["team"] for r in rows if r["team"]})
+        slots = sc.assign_slots_from_names(rows, state.num_teams)
+        me = ss().scrape_team
+        if me and me in slots and slots[me] != state.user_slot:
+            ss().log.info("Draft order from scrape: your slot is %d", slots[me])
+            state.user_slot = slots[me]
+            for t in state.teams:
+                t.is_user = t.slot == slots[me]
+        for name, slot in slots.items():
+            t = next((t for t in state.teams if t.slot == slot), None)
+            if t is not None and t.name.startswith("Team "):
+                t.name = name
+        picks = sc.draft_picks_from_scrape(rows, ss().players, state.num_teams, slots)
+        new, conflicts = state.merge_yahoo(picks, source="scrape")
+        state.last_sync = time.time()
+        state.sync_status = "connected"
+        state.sync_message = f"{len(rows)} picks in draft-room feed"
+        result["new"], result["conflicts"] = len(new), len(conflicts)
+        if new or conflicts:
+            save_state()
+            for p in new:
+                ss().log.info("Scrape pick %d: %s -> %s", p.pick, p.player_name or p.player_id, state.team_name(p.slot))
+            for c in conflicts:
+                ss().log.warning("Sync conflict at pick %d: local %s vs scrape %s", c.pick,
+                                 c.local_player_name or c.local_player_id, c.yahoo_player_name or c.yahoo_player_id)
+        elif manual:
+            save_state()
+    except Exception as exc:  # noqa: BLE001
+        state.sync_status = "lost"
+        state.sync_message = str(exc)[:200]
+        result["error"] = str(exc)
+        ss().log.error("Scrape sync failed: %s", exc)
+    return result
+
+
 # --------------------------------------------------------------------------- #
 # Sidebar
 # --------------------------------------------------------------------------- #
@@ -302,6 +353,9 @@ def sidebar():
 
         st.subheader("Yahoo")
         yahoo_sidebar()
+
+        st.subheader("Draft room (Claude in Chrome)")
+        scrape_sidebar()
 
         st.subheader("State")
         c1, c2 = st.columns(2)
@@ -407,6 +461,29 @@ def yahoo_sidebar():
         st.rerun()
 
 
+def scrape_sidebar():
+    """Feed from the Yahoo draft-room page, written by the /watch-draft loop. No API needed."""
+    ss().scrape_enabled = st.toggle("Watch scrape feed", value=ss().scrape_enabled,
+                                    help="Run `/loop 30s /watch-draft` in Claude Code with the draft room open.")
+    st.caption(f"Feed: `{ss().scrape_path}`")
+    opts = list(ss().scrape_teams)
+    if ss().scrape_team and ss().scrape_team not in opts:
+        opts.insert(0, ss().scrape_team)
+    if opts:
+        idx = opts.index(ss().scrape_team) if ss().scrape_team in opts else 0
+        ss().scrape_team = st.selectbox("My team name (as shown in the draft room)", opts, index=idx)
+    else:
+        ss().scrape_team = st.text_input("My team name (as shown in the draft room)", ss().scrape_team)
+    if ss().scrape_enabled:
+        ss().poll_interval = st.number_input("Poll every (s)", 2, 60, ss().poll_interval, key="scrape_poll")
+    if st.button("Sync feed now", use_container_width=True):
+        r = scrape_sync(manual=True)
+        if r["error"]:
+            st.error(r["error"])
+        else:
+            st.success(f"Synced: {r['new']} new picks, {r['conflicts']} conflicts")
+
+
 def load_yahoo_league(client: yh.YahooClient, key: str):
     state: DraftState = ss().state
     try:
@@ -452,7 +529,8 @@ def draft_page():
         st.warning("Load a players CSV in the sidebar to begin.")
         return
 
-    if ss().poll_enabled and ss().yahoo is not None and ss().yahoo_league_key:
+    yahoo_live = ss().poll_enabled and ss().yahoo is not None and ss().yahoo_league_key
+    if yahoo_live or ss().scrape_enabled:
         interval = max(2, int(ss().poll_interval))
         st.fragment(run_every=f"{interval}s")(poll_body)()
 
@@ -479,15 +557,24 @@ def draft_page():
 
 def poll_body():
     """Body of the auto-refreshing polling fragment (wrapped with st.fragment in draft_page)."""
-    r = yahoo_sync()
+    yahoo_live = ss().poll_enabled and ss().yahoo is not None and ss().yahoo_league_key
+    r = yahoo_sync() if yahoo_live else scrape_sync()
     state: DraftState = ss().state
     if r["new"] or r["conflicts"]:
         st.rerun(scope="app")
     age = f"{time.time() - state.last_sync:.0f}s ago" if state.last_sync else "never"
+    label = "Yahoo" if yahoo_live else "Draft-room feed"
     if state.sync_status == "lost":
-        st.error(f"YAHOO SYNC LOST — manual mode active. Last update: {age}. {state.sync_message}")
-    else:
-        st.caption(f"Yahoo polling every {ss().poll_interval}s · last update {age}")
+        st.error(f"{label.upper()} SYNC LOST — manual mode active. Last update: {age}. {state.sync_message}")
+        return
+    if not yahoo_live:
+        feed_age = time.time() - ss().scrape_updated if ss().scrape_updated else None
+        if feed_age is None:
+            st.warning(f"Draft-room feed not written yet ({ss().scrape_path}). Is `/loop 30s /watch-draft` running?")
+            return
+        if feed_age > 120:
+            st.warning(f"Draft-room feed is stale ({feed_age:.0f}s old). Is the /watch-draft loop still running?")
+    st.caption(f"{label} polling every {ss().poll_interval}s · last update {age}")
 
 
 def maybe_snapshot(recs):
@@ -593,17 +680,18 @@ def recommendations_panel(recs):
 
 def conflicts_panel():
     state: DraftState = ss().state
-    st.error("SYNC WARNING — local picks disagree with Yahoo")
+    st.error("SYNC WARNING — local picks disagree with the remote draft results")
     for c in list(state.conflicts):
+        remote = "Draft room" if c.source == "scrape" else "Yahoo"
         cols = st.columns([3, 1, 1])
         cols[0].markdown(f"**Pick {c.pick}** · Local: {name_of(c.local_player_id, c.local_player_name)} · "
-                         f"Yahoo: {name_of(c.yahoo_player_id, c.yahoo_player_name)}")
+                         f"{remote}: {name_of(c.yahoo_player_id, c.yahoo_player_name)}")
         if cols[1].button("Keep local", key=f"kl_{c.pick}"):
             state.resolve_conflict(c.pick, "local")
             save_state(); ss().log.info("Conflict at pick %d resolved: keep local", c.pick); st.rerun()
-        if cols[2].button("Use Yahoo", key=f"ky_{c.pick}"):
+        if cols[2].button(f"Use {remote}", key=f"ky_{c.pick}"):
             state.resolve_conflict(c.pick, "yahoo")
-            save_state(); ss().log.info("Conflict at pick %d resolved: use Yahoo", c.pick); st.rerun()
+            save_state(); ss().log.info("Conflict at pick %d resolved: use %s", c.pick, remote); st.rerun()
 
 
 def available_table(recs):

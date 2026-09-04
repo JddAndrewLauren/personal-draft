@@ -1,0 +1,222 @@
+{
+ "updated": 1757000000.0,
+ "picks": [
+  {
+   "pick": 1,
+   "team": "Squad 1",
+   "player": "Bijan Robinson",
+   "position": "RB",
+   "nfl_team": "ATL"
+  },
+  {
+   "pick": 2,
+   "team": "Squad 2",
+   "player": "Ja'Marr Chase",
+   "position": "WR",
+   "nfl_team": "CIN"
+  },
+  {
+   "pick": 3,
+   "team": "Squad 3",
+   "player": "Amon-Ra St. Brown",
+   "position": "WR",
+   "nfl_team": "DET"
+  },
+  {
+   "pick": 4,
+   "team": "Squad 4",
+   "player": "Nico Collins",
+   "position": "WR",
+   "nfl_team": "HOU"
+  },
+  {
+   "pick": 5,
+   "team": "Squad 5",
+   "player": "Justin Jefferson",
+   "position": "WR",
+   "nfl_team": "MIN"
+  },
+  {
+   "pick": 6,
+   "team": "Squad 6",
+   "player": "Puka Nacua",
+   "position": "WR",
+   "nfl_team": "LAR"
+  },
+  {
+   "pick": 7,
+   "team": "Squad 7",
+   "player": "CeeDee Lamb",
+   "position": "WR",
+   "nfl_team": "DAL"
+  },
+  {
+   "pick": 8,
+   "team": "Squad 8",
+   "player": "Saquon Barkley",
+   "position": "RB",
+   "nfl_team": "PHI"
+  },
+  {
+   "pick": 9,
+   "team": "Squad 9",
+   "player": "Jahmyr Gibbs",
+   "position": "RB",
+   "nfl_team": "DET"
+  },
+  {
+   "pick": 10,
+   "team": "Squad 10",
+   "player": "Christian McCaffrey",
+   "position": "RB",
+   "nfl_team": "SF"
+  },
+  {
+   "pick": 11,
+   "team": "Squad 11",
+   "player": "Josh Jacobs",
+   "position": "RB",
+   "nfl_team": "GB"
+  },
+  {
+   "pick": 12,
+   "team": "Squad 12",
+   "player": "Ashton Jeanty",
+   "position": "RB",
+   "nfl_team": "LV"
+  },
+  {
+   "pick": 13,
+   "team": "Squad 12",
+   "player": "Derrick Henry",
+   "position": "RB",
+   "nfl_team": "BAL"
+  },
+  {
+   "pick": 14,
+   "team": "Squad 11",
+   "player": "Drake London",
+   "position": "WR",
+   "nfl_team": "ATL"
+  },
+  {
+   "pick": 15,
+   "team": "Squad 10",
+   "player": "De'Von Achane",
+   "position": "RB",
+   "nfl_team": "MIA"
+  },
+  {
+   "pick": 16,
+   "team": "Squad 9",
+   "player": "Malik Nabers",
+   "position": "WR",
+   "nfl_team": "NYG"
+  },
+  {
+   "pick": 17,
+   "team": "Squad 8",
+   "player": "A.J. Brown",
+   "position": "WR",
+   "nfl_team": "PHI"
+  },
+  {
+   "pick": 18,
+   "team": "Squad 7",
+   "player": "Brian Thomas Jr.",
+   "position": "WR",
+   "nfl_team": "JAX"
+  },
+  {
+   "pick": 19,
+   "team": "Squad 6",
+   "player": "Jaxon Smith-Njigba",
+   "position": "WR",
+   "nfl_team": "SEA"
+  },
+  {
+   "pick": 20,
+   "team": "Squad 5",
+   "player": "Marvin Harrison Jr.",
+   "position": "WR",
+   "nfl_team": "ARI"
+  },
+  {
+   "pick": 21,
+   "team": "Squad 4",
+   "player": "Ladd McConkey",
+   "position": "WR",
+   "nfl_team": "LAC"
+  },
+  {
+   "pick": 22,
+   "team": "Squad 3",
+   "player": "Kyren Williams",
+   "position": "RB",
+   "nfl_team": "LAR"
+  },
+  {
+   "pick": 23,
+   "team": "Squad 2",
+   "player": "Jonathan Taylor",
+   "position": "RB",
+   "nfl_team": "IND"
+  },
+  {
+   "pick": 24,
+   "team": "Squad 1",
+   "player": "Bucky Irving",
+   "position": "RB",
+   "nfl_team": "TB"
+  },
+  {
+   "pick": 25,
+   "team": "Squad 1",
+   "player": "Terry McLaurin",
+   "position": "WR",
+   "nfl_team": "WAS"
+  },
+  {
+   "pick": 26,
+   "team": "Squad 2",
+   "player": "Brock Bowers",
+   "position": "TE",
+   "nfl_team": "LV"
+  },
+  {
+   "pick": 27,
+   "team": "Squad 3",
+   "player": "Mike Evans",
+   "position": "WR",
+   "nfl_team": "TB"
+  },
+  {
+   "pick": 28,
+   "team": "Squad 4",
+   "player": "Davante Adams",
+   "position": "WR",
+   "nfl_team": "LAR"
+  },
+  {
+   "pick": 29,
+   "team": "Squad 5",
+   "player": "Tee Higgins",
+   "position": "WR",
+   "nfl_team": "CIN"
+  },
+  {
+   "pick": 30,
+   "team": "Squad 6",
+   "player": "Tyreek Hill",
+   "position": "WR",
+   "nfl_team": "MIA"
+  },
+  {
+   "pick": 31,
+   "team": "Squad 7",
+   "player": "Nobody Realname",
+   "position": "WR",
+   "nfl_team": "XXX"
+  }
+ ]
+}
