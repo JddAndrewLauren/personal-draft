@@ -35,14 +35,15 @@ the feed. Rehearsed against a live Yahoo mock on 2026-09-04; this recipe is what
      if (r.cells.length < 3) continue;
      const pick = +r.cells[0].innerText.trim(); if (!pick || pick < MIN) continue;
      const pl = r.cells[1], id = pl.querySelector('[data-id]')?.dataset.id || '';
-     const lines = pl.innerText.split('\n').map(s => s.trim())
-       .filter(s => s && !/^(Q|O|IR|D|SUSP|NA|PUP)$/.test(s) && !/^Bye/.test(s));
-     out.push([pick, r.cells[2].innerText.trim(), lines[0] || '', lines[1] || '', lines[2] || '', id].join(' | '));
+     const lines = pl.innerText.split('\n').map(s => s.trim()).filter(Boolean);
+     const pi = lines.findIndex(s => /^(QB|RB|WR|TE|K|DEF|D\/ST)$/.test(s));   // badges (Q, O, CEL...) sit between name and pos
+     out.push([pick, r.cells[2].innerText.trim(), lines[0] || '', pi >= 0 ? lines[pi] : '', (pi >= 0 && lines[pi + 1] && !/^Bye/.test(lines[pi + 1])) ? lines[pi + 1] : '', id].join(' | '));
    }
    out.reverse().join('\n')
    ```
 
    Each line is `pick | fantasy team | abbreviated name | pos | NFL team | yahoo player id`.
+   Team defenses appear as the nickname ("Texans", pos DEF, no NFL-team line, id 1000xx).
    The user's own team is listed as **Your Team**; names are abbreviated ("J. Gibbs") but the
    Yahoo id resolves the player exactly against `data/players.csv`. Kickers and unknown ids fall
    back to a placeholder pick; that is fine.

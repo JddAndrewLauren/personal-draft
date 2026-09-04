@@ -117,3 +117,14 @@ def test_write_picks_append_merges_by_pick(tmp_path):
     feed = sc.load_picks(path)
     assert [r["pick"] for r in feed["picks"]] == [1, 2, 3]
     assert feed["picks"][1]["yahoo_id"] == "40055"
+
+
+def test_full_mock_draft_feed_resolves_everything_but_kickers():
+    """Real feed from the 2026-09-04 Yahoo mock (180 picks, id-first resolution)."""
+    feed = sc.load_picks(ROOT / "test-data" / "mock-draft-2026-09-04.json")
+    picks = sc.draft_picks_from_scrape(feed["picks"], players(), 12, sc.assign_slots_from_names(feed["picks"], 12))
+    assert len(picks) == 180 and picks[-1].pick == 180
+    unresolved = [r for r, p in zip(feed["picks"], picks) if p.player_id.startswith("scrape:")]
+    assert unresolved and all(r["position"] == "K" for r in unresolved)
+    assert sum(1 for p in picks if p.player_id.endswith("|DEF")) == 12
+    assert [p.player_name for p in picks if p.slot == 1][:3] == ["Jahmyr Gibbs", "A.J. Brown", "Chris Olave"]
