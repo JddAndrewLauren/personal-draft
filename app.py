@@ -262,12 +262,14 @@ def scrape_sync(manual: bool = False) -> dict:
             if t is not None and t.name.startswith("Team "):
                 t.name = name
         picks = sc.draft_picks_from_scrape(rows, ss().players, state.num_teams, slots)
+        confirmed_before = sum(1 for p in state.picks if p.confirmed)
         new, conflicts = state.merge_yahoo(picks, source="scrape")
         state.last_sync = time.time()
         state.sync_status = "connected"
         state.sync_message = f"{len(rows)} picks in draft-room feed"
         result["new"], result["conflicts"] = len(new), len(conflicts)
-        if new or conflicts:
+        confirmed = sum(1 for p in state.picks if p.confirmed) > confirmed_before   # manual pick confirmed by the feed
+        if new or conflicts or confirmed:
             save_state()
             for p in new:
                 ss().log.info("Scrape pick %d: %s -> %s", p.pick, p.player_name or p.player_id, state.team_name(p.slot))

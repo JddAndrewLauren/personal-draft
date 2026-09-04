@@ -128,3 +128,13 @@ def test_full_mock_draft_feed_resolves_everything_but_kickers():
     assert unresolved and all(r["position"] == "K" for r in unresolved)
     assert sum(1 for p in picks if p.player_id.endswith("|DEF")) == 12
     assert [p.player_name for p in picks if p.slot == 1][:3] == ["Jahmyr Gibbs", "A.J. Brown", "Chris Olave"]
+
+
+def test_second_mock_feed_resolves_everything_but_kickers():
+    """2026-09-04 mock #2 (slot 3, Claude drafting): same guarantees as the first fixture."""
+    feed = sc.load_picks(ROOT / "test-data" / "mock-draft-2026-09-04b.json")
+    picks = sc.draft_picks_from_scrape(feed["picks"], players(), 12, sc.assign_slots_from_names(feed["picks"], 12))
+    assert len(picks) == 180
+    unresolved = [r for r, p in zip(feed["picks"], picks) if p.player_id.startswith("scrape:")]
+    assert all(r["position"] == "K" for r in unresolved) and len(unresolved) == 12
+    assert [p.player_name for p in picks if p.slot == 3][:3] == ["Jonathan Taylor", "Javonte Williams", "Josh Allen"]

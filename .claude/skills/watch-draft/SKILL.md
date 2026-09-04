@@ -48,14 +48,18 @@ the feed. Rehearsed against a live Yahoo mock on 2026-09-04; this recipe is what
    Yahoo id resolves the player exactly against `data/players.csv`. Kickers and unknown ids fall
    back to a placeholder pick; that is fine.
    The table is newest-first; the snippet reverses it. If `out` is empty, nothing new happened.
-3. **Append to the feed** (repo root as cwd), pasting the lines verbatim:
+3. **Append to the feed** (repo root as cwd), pasting the lines verbatim. `draft_cli.py tick`
+   appends and then prints the draft status (pick, picks away, your roster) and the
+   optimizer's top recommendations, so one call covers the feed and the read-out:
 
    ```bash
-   .venv/bin/python write_picks.py --append <<'PICKS'
+   .venv/bin/python draft_cli.py tick <<'PICKS'
    40 | tyler | B. Irving | RB | TB | 40993
    41 | Gregory | T. McMillan | WR | Car | 41793
    PICKS
    ```
+
+   (`write_picks.py --append` is the same append without the read-out.)
 
    On the very first tick (or if the feed might be stale from an earlier draft) send *all* picks
    in chunks of ~20 (`MIN` = 1, 21, 41, ...) and drop `--append` for the first chunk so the old

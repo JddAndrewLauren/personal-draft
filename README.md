@@ -188,6 +188,12 @@ Rehearsed against a live Yahoo mock on 2026-09-04 (all 180 picks landed; the fee
 **State > Reset draft**, or delete `draft_state.json` and empty `scrape/picks.json`. Mock rooms
 run a 30 s clock and autodraft the moment it expires, so have everything set before joining.
 
+Two draft-day rules learned the hard way in the second mock (`docs/mock-draft-2026-09-04b.md`):
+keep Yahoo's queue loaded with the app's top two or three at all times, because **two expired
+clocks put your team into autopick mode** and the rest of the draft is gone in seconds; and if the
+"put into autopick mode" banner appears, turn autopick off immediately. `draft_cli.py recs` prints
+the same recommendations as the app in one command (`draft_cli.py tick` appends feed lines first).
+
 ## Testing and replay
 
 ```bash
