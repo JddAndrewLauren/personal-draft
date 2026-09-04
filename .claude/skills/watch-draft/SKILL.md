@@ -64,7 +64,8 @@ the feed. Rehearsed against a live Yahoo mock on 2026-09-04; this recipe is what
    On the very first tick (or if the feed might be stale from an earlier draft) send *all* picks
    in chunks of ~20 (`MIN` = 1, 21, 41, ...) and drop `--append` for the first chunk so the old
    feed is replaced.
-4. **Report** one line: `tick: N picks total (M new), last: <player>`.
+4. **Report** one line: `tick: N picks total (M new), last: <player>`. If the status line says
+   3 or fewer picks away, run `/queue-draft` next (it stars the top recs in Yahoo's Queue).
 
 ## Stop conditions
 

@@ -193,6 +193,9 @@ keep Yahoo's queue loaded with the app's top two or three at all times, because 
 clocks put your team into autopick mode** and the rest of the draft is gone in seconds; and if the
 "put into autopick mode" banner appears, turn autopick off immediately. `draft_cli.py recs` prints
 the same recommendations as the app in one command (`draft_cli.py tick` appends feed lines first).
+`draft_cli.py recs --n 3 --ids` prints them as `yahoo_id|name|pos` lines, and `/queue-draft` stars
+those players in the room's Queue so an expired clock autodrafts the app's #1 (run it whenever the
+tick says 3 or fewer picks away).
 
 ## Testing and replay
 

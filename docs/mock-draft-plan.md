@@ -35,6 +35,10 @@ the team ever enter autopick mode?
   off and note how many seconds that costs.
 - Measure queue-load latency per tick (target: queue updated within one tick of picks-away
   reaching 3).
+- Sequence: `/watch-draft` tick -> when 3 or fewer away, `/queue-draft` (first run: do its
+  read-only DOM probe and pin the star/queue selectors in the skill) -> arm the YOUR TURN
+  script. Also invoke `/queue-draft` once while on the clock to confirm it answers
+  `ON CLOCK - skipped` and drafts nothing.
 
 ## Mock 5 (optional): human in the loop
 

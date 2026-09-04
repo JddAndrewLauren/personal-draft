@@ -59,3 +59,19 @@ def test_kicker_placeholder_and_complete_draft():
     out = run(["status", "--feed", str(FULL)])
     assert "draft complete" in out and "?: C. Little" in out and "unresolved:" in out
     assert "no more picks" in run(["recs", "--feed", str(FULL)])
+
+
+def test_recs_ids_lines(tmp_path):
+    feed = str(feed_through(tmp_path, 23))
+    plain = [l.strip() for l in run(["recs", "--feed", feed, "--n", "3"]).splitlines() if l.strip()[:2] in ("1.", "2.", "3.")]
+    out = run(["recs", "--feed", feed, "--n", "3", "--ids"])
+    lines = out.strip().splitlines()
+    assert len(lines) == 3
+    for line, ranked in zip(lines, plain):
+        yid, name, pos = line.split("|")
+        assert yid.isdigit() and pos in ("QB", "RB", "WR", "TE", "K", "DEF") and name in ranked
+    assert "confidence:" not in out
+
+
+def test_recs_ids_complete_draft():
+    assert run(["recs", "--feed", str(FULL), "--ids"]).strip() == "no more picks for you"

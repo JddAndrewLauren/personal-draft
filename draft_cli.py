@@ -2,7 +2,7 @@
 """Text interface to the optimizer over the draft-room feed (for Claude Code during the draft).
 
     python draft_cli.py [--feed scrape/picks.json] [--team "Your Team"] [--user-slot N] status
-    python draft_cli.py recs [--n 5]
+    python draft_cli.py recs [--n 5] [--ids]                # --ids: one `yahoo_id|name|pos` line per rec (for /queue-draft)
     python draft_cli.py tick [--n 5] < picks.txt      # append feed lines (write_picks format), then status + recs
 
 Read-only over the feed: it never writes draft_state.json (the Streamlit app keeps its own
@@ -72,12 +72,14 @@ def status_text(state: DraftState, feed: dict, unresolved: list, players: list, 
     return "\n".join(lines)
 
 
-def recs_text(state: DraftState, players: list, ocfg: dict, n: int = 5) -> str:
+def recs_text(state: DraftState, players: list, ocfg: dict, n: int = 5, ids: bool = False) -> str:
     if state.is_complete or state.next_user_pick() is None:
         return "no more picks for you"
     t = time.perf_counter()
     recs = recommend(state, players, ocfg)
     ms = (time.perf_counter() - t) * 1000
+    if ids:   # machine-readable, for the /queue-draft skill; the Yahoo id may be blank
+        return "\n".join(f"{r.player.yahoo_player_id or ''}|{r.player.name}|{r.player.position}" for r in recs[:n])
     out = [f"recs for your pick #{state.next_user_pick()} (following: {state.following_user_pick()})  [{ms:.0f} ms]"]
     for i, r in enumerate(recs[:n], start=1):
         p = r.player
@@ -100,6 +102,7 @@ def main(argv=None) -> int:
     ap.add_argument("--team", default=MY_TEAM)
     ap.add_argument("--user-slot", type=int, default=None)
     ap.add_argument("--n", type=int, default=5)
+    ap.add_argument("--ids", action="store_true", help="print recs as yahoo_id|name|pos lines")
     a = ap.parse_args(argv)
     if a.command == "tick":
         rows = parse_lines(sys.stdin.read())
@@ -111,7 +114,7 @@ def main(argv=None) -> int:
     if a.command in ("status", "tick"):
         print(status_text(state, feed, unresolved, players, a.team))
     if a.command in ("recs", "tick"):
-        print(recs_text(state, players, ocfg, a.n))
+        print(recs_text(state, players, ocfg, a.n, a.ids))
     return 0
 
 
