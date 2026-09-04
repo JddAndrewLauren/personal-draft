@@ -7,6 +7,8 @@ import pytest
 from models import DraftState, LeagueSettings, Player, RosterConfig, default_teams
 from optimizer import (
     DEFAULT_CONFIG,
+    RecommendationContext,
+    _action,
     assign_tiers,
     assign_roster_slots,
     blend_value,
@@ -16,6 +18,7 @@ from optimizer import (
     merge_config,
     prepare_players,
     recommend,
+    Recommendation,
     replacement_ranks,
     risk_labels,
     roster_need,
@@ -335,7 +338,29 @@ def test_last_pick_has_no_wait_cost():
     assert recs[0].action == "LAST PICK"
 
 
-def test_off_clock_weights_by_availability():
+def _rec(survival, wait_cost):
+    return Recommendation(player=P("X", "RB", 200.0), score=0.0, adjusted_score=0.0, value=100.0, vor=50.0,
+                          survival=survival, availability=1.0, wait_cost=wait_cost,
+                          expected_alternative_value=0.0, alternative_name=None,
+                          alternative_probability=0.0, roster_need=1.0)
+
+
+def _ctx(following=30):
+    return RecommendationContext(current_pick=19, my_pick=19, following_pick=following,
+                                 on_the_clock=True, picks_remaining=10)
+
+
+def test_action_rank0_reflects_urgency():
+    assert _action(_rec(0.87, 0.4), 0, "CLOSE", _ctx()) == "CLOSE DECISION"
+    assert _action(_rec(0.87, 0.4), 0, "STRONG", _ctx()) == "SAFE TO WAIT"
+    assert _action(_rec(0.15, 12.0), 0, "STRONG", _ctx()) == "TAKE NOW"
+    # High survival but a real cost of waiting (fallback is much weaker) is still urgent.
+    assert _action(_rec(0.85, 2.5), 0, "MODERATE", _ctx()) == "TAKE NOW"
+    assert _action(_rec(0.87, 0.4), 0, "STRONG", _ctx(following=None)) == "LAST PICK"
+    assert _action(_rec(0.87, 0.4), 1, "STRONG", _ctx()) == "LIKELY AVAILABLE LATER"
+
+
+
     players, settings = pool()
     prepare_players(players, settings)
     st = make_state(settings, user_slot=12)     # first pick at 12

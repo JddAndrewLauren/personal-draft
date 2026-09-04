@@ -528,7 +528,12 @@ def _action(rec: Recommendation, rank: int, confidence: str, ctx: Recommendation
     if ctx.following_pick is None:
         return "LAST PICK"
     if rank == 0:
-        return "CLOSE DECISION" if confidence == "CLOSE" else "TAKE NOW"
+        if confidence == "CLOSE":
+            return "CLOSE DECISION"
+        # Same thresholds as the "Little urgency" bullet in explain().
+        if rec.survival >= 0.8 and rec.wait_cost < 1.0:
+            return "SAFE TO WAIT"
+        return "TAKE NOW"
     if rec.survival >= 0.8:
         return "LIKELY AVAILABLE LATER"
     if rec.survival <= 0.35:

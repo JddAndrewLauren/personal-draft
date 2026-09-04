@@ -14,7 +14,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from scrape import load_picks, write_picks
+from scrape import load_picks, merge_picks, write_picks
 
 
 def parse_lines(text: str) -> list:
@@ -40,9 +40,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     rows = parse_lines(sys.stdin.read())
     if a.append:
-        merged = {r["pick"]: r for r in load_picks(a.path)["picks"]}
-        merged.update({r["pick"]: r for r in rows})
-        rows = [merged[k] for k in sorted(merged)]
+        rows = merge_picks(load_picks(a.path)["picks"], rows)
     write_picks(rows, a.path)
     print(f"wrote {len(rows)} picks -> {a.path}")
     return 0

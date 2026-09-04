@@ -43,6 +43,13 @@ def load_picks(path) -> dict:
     return {"updated": float(d.get("updated") or 0.0), "picks": rows}
 
 
+def merge_picks(existing: list, rows: list) -> list:
+    """Overlay ``rows`` on ``existing`` keyed by pick number (a tick only carries new picks)."""
+    merged = {r["pick"]: r for r in existing}
+    merged.update({r["pick"]: r for r in rows})
+    return [merged[k] for k in sorted(merged)]
+
+
 def write_picks(rows: list, path, updated: Optional[float] = None) -> None:
     """Atomically write a feed snapshot."""
     p = Path(path)

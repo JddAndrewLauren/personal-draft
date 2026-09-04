@@ -15,6 +15,7 @@ POS_COLORS = {"QB": "#f0647a", "RB": "#4ade80", "WR": "#60a5fa", "TE": "#fbbf24"
 RISK_COLORS = {"SAFE": "#4ade80", "BALANCED": "#fbbf24", "BOOM-BUST": "#f0647a"}
 ACTION_KIND = {
     "TAKE NOW": "accent", "NOW OR NEVER": "accent", "CLOSE DECISION": "amber",
+    "SAFE TO WAIT": "amber",
     "LIKELY AVAILABLE LATER": "muted", "ALTERNATIVE": "muted", "LAST PICK": "gray",
 }
 

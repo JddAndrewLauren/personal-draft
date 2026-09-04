@@ -25,7 +25,10 @@ MY_TEAM = "Your Team"
 
 
 def state_from_feed(feed_path, cfg: dict, players: list, team: str = MY_TEAM, user_slot=None):
-    """Fresh DraftState built from the feed snapshot. Returns (state, feed, unresolved_rows)."""
+    """Fresh DraftState built from the feed snapshot. Returns (state, feed, unresolved_rows, ocfg).
+
+    Calls prepare_players, which mutates the Player objects in place (VOR, tiers); fine for a
+    one-shot process, so do not call it on the app's live player list."""
     settings = settings_from_config(cfg)
     ocfg = merge_config(cfg.get("optimizer"))
     prepare_players(players, settings, ocfg)
@@ -100,9 +103,7 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     if a.command == "tick":
         rows = parse_lines(sys.stdin.read())
-        merged = {r["pick"]: r for r in sc.load_picks(a.feed)["picks"]}
-        merged.update({r["pick"]: r for r in rows})
-        sc.write_picks([merged[k] for k in sorted(merged)], a.feed)
+        sc.write_picks(sc.merge_picks(sc.load_picks(a.feed)["picks"], rows), a.feed)
         print(f"appended {len(rows)} picks")
     cfg = load_config(a.config)
     players = load_players(a.players or cfg["paths"]["players_csv"])

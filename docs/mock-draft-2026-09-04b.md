@@ -37,7 +37,8 @@ Javonte Williams C, Price C, Pierce C, Sutton C-, White C, Judkins B-, Addison D
    scaled ×0.5, so DEF is never recommended before round 12.
 3. **"TAKE NOW" is attached to the #1 whenever confidence isn't CLOSE**, even when the reasons
    say "little urgency" (22, 46) or the player has a 15% chance of reaching the pick (142).
-   `_action` should read survival/wait cost, not just rank.
+   `_action` should read survival/wait cost, not just rank. (Fixed after the draft: rank-0 now
+   says SAFE TO WAIT when survival >= 80% and wait cost < 1, the same gate as the bullet.)
 4. **Reach estimates missed twice in a row**: Watson "76% chance he reaches #70" (gone at 66),
    Metcalf "66% reaches #94" (gone at 92). Small sample, but both were ADP-late players in a
    room that drafts faster than ADP. The "NOW OR NEVER" calls (Pickens, Montgomery, Irving) were

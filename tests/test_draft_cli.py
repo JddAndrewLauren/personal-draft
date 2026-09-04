@@ -44,7 +44,7 @@ def test_status_and_recs_on_the_clock(tmp_path):
     lines = [l for l in out.splitlines() if l.strip()[:2] in ("1.", "2.", "3.", "4.", "5.")]
     assert len(lines) == 5 and "confidence:" in out
     assert not any(" K " in l for l in lines)            # no kicker rows exist to recommend
-    assert "1. " in lines[0] and "TAKE NOW" in lines[0] or "CLOSE DECISION" in lines[0]
+    assert "1. " in lines[0] and any(a in lines[0] for a in ("TAKE NOW", "SAFE TO WAIT", "CLOSE DECISION"))
 
 
 def test_tick_appends_and_advances(tmp_path):
