@@ -16,7 +16,7 @@ def make_state(user_slot=7):
 
 
 def players():
-    return load_players(ROOT / "data" / "players.csv")
+    return load_players(ROOT / "test-data" / "players.csv")
 
 
 def test_load_picks_missing_file(tmp_path):

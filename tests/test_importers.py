@@ -105,7 +105,7 @@ def test_read_generic_with_column_map():
 
 
 def test_merge_external_matches_normalised_names_without_fuzzing():
-    players = load_players(DATA.parent / "data" / "players.csv")
+    players = load_players(DATA / "players.csv")
     rows = read_external(DATA / "fantasypros_ecr.csv")
     result = merge_external(players, rows)
     assert result["matched"] == 8
@@ -126,7 +126,7 @@ def test_merge_external_projection_points_and_team_preference():
 
 
 def test_external_vbd_blend_end_to_end():
-    players = load_players(DATA.parent / "data" / "players.csv")
+    players = load_players(DATA / "players.csv")
     merge_external(players, read_external(DATA / "fantasypros_ecr.csv"))
     prepare_players(players, LeagueSettings(), {"external_vbd_weight": 0.5})
     chase = next(p for p in players if p.name == "Ja'Marr Chase")

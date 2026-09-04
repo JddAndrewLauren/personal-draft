@@ -168,16 +168,25 @@ If the Yahoo application is not approved by draft day, Claude Code can read the 
 itself and feed picks to the app. Nothing Yahoo-specific is required.
 
 1. Open the Yahoo draft room in Chrome (logged in, Claude in Chrome extension enabled for the site).
-2. `streamlit run app.py`. In the sidebar under **Draft room (Claude in Chrome)** toggle
-   **Watch scrape feed** and enter **My team name** exactly as the draft room shows it.
+2. `streamlit run app.py`. In the sidebar under **Pick source > Draft room** toggle
+   **Watch scrape feed** and set **My team name** to `Your Team` (that is how Yahoo's draft room
+   lists your own team in *Results > Round by Round*; the dropdown fills with the other team
+   names after the first sync).
 3. In Claude Code, from the repo root, run `/loop 30s /watch-draft`. Every 30 s Claude reads the
-   draft results off the page and writes `scrape/picks.json` (via `write_picks.py`). The app
-   polls that file, appends new picks, confirms manual picks, and raises the same **SYNC WARNING**
-   on disagreement. Your draft slot auto-corrects from round 1 once your team name appears.
+   *Results > Round by Round* table off the page and appends the new picks to
+   `scrape/picks.json` via `write_picks.py --append`, one line per pick:
+   `pick | team | name | pos | NFL team | yahoo id`. The Yahoo id (the row's `data-id`) resolves
+   the player exactly even though the room abbreviates names ("J. Gibbs"); kickers, which the
+   league does not roster, land as placeholder picks. The app polls the file, appends new picks,
+   confirms manual picks, and raises the same **SYNC WARNING** on disagreement. Your draft slot
+   auto-corrects from round 1 once "Your Team" appears in the feed.
 4. If the app shows "feed is stale", the loop has stopped: re-run the `/loop` command. Manual
    picks keep working throughout.
 
-Rehearse in a Yahoo **mock draft** first: mock rooms are available any time and use the same page.
+Rehearsed against a live Yahoo mock on 2026-09-04 (all 180 picks landed; the feed is kept as
+`test-data/mock-draft-2026-09-04.json`). Before the real draft, reset the mock state: sidebar
+**State > Reset draft**, or delete `draft_state.json` and empty `scrape/picks.json`. Mock rooms
+run a 30 s clock and autodraft the moment it expires, so have everything set before joining.
 
 ## Testing and replay
 
@@ -190,6 +199,8 @@ python replay_draft.py test-data/draft.json --all   # also time a recompute afte
 The replay reports how often the recorded pick was the optimizer's #1 / top-3 and the maximum
 recompute time (target < 500 ms; typically a few ms). To replay a real Yahoo draft, export the
 picks into the same JSON shape (`teams, rounds, user_slot, picks[{pick, player, position}]`).
+Tests read `test-data/players.csv`, a frozen subset of the master table, so `data/players.csv`
+can be re-scraped freely without breaking them.
 
 ## Configuration
 

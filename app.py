@@ -469,14 +469,15 @@ def scrape_sidebar():
     ss().scrape_enabled = st.toggle("Watch scrape feed", value=ss().scrape_enabled,
                                     help="Run `/loop 30s /watch-draft` in Claude Code with the draft room open.")
     st.caption(f"Feed: `{ss().scrape_path}`")
+    # One widget whatever the feed knows: swapping text_input <-> selectbox mid-draft dropped
+    # the typed value (seen in the 2026-09-04 mock). Yahoo lists the user's team as "Your Team".
     opts = list(ss().scrape_teams)
     if ss().scrape_team and ss().scrape_team not in opts:
         opts.insert(0, ss().scrape_team)
-    if opts:
-        idx = opts.index(ss().scrape_team) if ss().scrape_team in opts else 0
-        ss().scrape_team = st.selectbox("My team name (as shown in the draft room)", opts, index=idx)
-    else:
-        ss().scrape_team = st.text_input("My team name (as shown in the draft room)", ss().scrape_team)
+    ss().scrape_team = st.selectbox("My team name (as shown in the draft room)", opts,
+                                    index=opts.index(ss().scrape_team) if ss().scrape_team in opts else None,
+                                    accept_new_options=True, placeholder="type it, e.g. Your Team",
+                                    help="Yahoo's draft room lists your own team as \"Your Team\".") or ""
     if ss().scrape_enabled:
         ss().poll_interval = st.number_input("Poll every (s)", 2, 60, ss().poll_interval, key="scrape_poll")
     if st.button("Sync feed now", width="stretch"):
@@ -866,11 +867,12 @@ def readiness_page():
     adp_in_draft = sum(1 for p in players if p.adp is not None and p.adp <= draft_size)
     with_ext = sum(1 for p in players if p.external_vbd is not None or p.rank_stddev is not None)
     with_yid = sum(1 for p in players if p.yahoo_player_id)
-    scrape = live_source() == "scrape" or not authed
+    scrape = bool(ss().scrape_enabled)
     league_src = "Yahoo" if state.settings.league_key else "config.yaml"
     checks = [
         ("Pick source", authed or scrape,
-         "Draft room scrape (Yahoo API not needed)" if scrape else "Yahoo API"),
+         "Draft room scrape (Yahoo API not needed)" if scrape else
+         "Yahoo API" if authed else "Toggle Watch scrape feed (sidebar > Pick source) or authorize Yahoo"),
         ("League settings", bool(state.settings.league_key) or state.settings.name != "Local league",
          f"{state.settings.name} · {league_src}"),
         ("Teams", len(state.teams) == state.settings.num_teams, f"{len(state.teams)} teams"),
