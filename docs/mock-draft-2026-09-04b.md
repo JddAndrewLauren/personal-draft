@@ -31,10 +31,15 @@ Javonte Williams C, Price C, Pierce C, Sutton C-, White C, Judkins B-, Addison D
    replacement level is far below WR, so RBs always carry more VOR; the roster-need multiplier
    (starter open ×1.10 vs bench ×0.85/×0.70) is not large enough to flip it. Yahoo graded those
    mid-round RBs C. Candidate fixes: a stronger starter-open multiplier for a position with
-   *zero* starters, or a per-position cap on bench picks while a starter slot is empty.
+   *zero* starters, or a per-position cap on bench picks while a starter slot is empty. (Fixed after
+   the draft: `need_multipliers.starter_empty` 1.5 applies when a position has nothing rostered;
+   pick 51 now recommends WR/TE over a 4th RB on both the frozen and the live player files.)
 2. **Bench players outrank open starters late.** At 99 it recommended a backup QB (VOR 10) over
    the open WR3; at 118 a bench TE with *negative* value over the open DEF slot. DEF value is
-   scaled ×0.5, so DEF is never recommended before round 12.
+   scaled ×0.5, so DEF is never recommended before round 12. (Fixed after the draft: a flat
+   `need_multipliers.bench_penalty` of 5 pts comes off any bench pick while a starter or FLEX slot is
+   open. It is additive because late values go negative and multipliers cannot reorder those; DEF is
+   now #1 at 118 on the live file. A backup QB with a 15-pt gap still wins at 99, by design.)
 3. **"TAKE NOW" is attached to the #1 whenever confidence isn't CLOSE**, even when the reasons
    say "little urgency" (22, 46) or the player has a 15% chance of reaching the pick (142).
    `_action` should read survival/wait cost, not just rank. (Fixed after the draft: rank-0 now

@@ -39,10 +39,12 @@ DEFAULT_CONFIG = {
     "position_value_scale": {"K": 0.5, "DEF": 0.5},
     "need_multipliers": {
         "starter_open": 1.10,
+        "starter_empty": 1.5,         # starter slot open and *nothing* rostered at the position yet
         "flex_open": 1.00,
         "bench": 0.85,
         "bench_deep": 0.70,
         "bench_deep_after": 2,        # surplus bodies at a position before "deep" applies
+        "bench_penalty": 5.0,         # POINTS taken off a bench pick while any starter/FLEX slot is open
     },
     "confidence_thresholds": {"strong": 8.0, "moderate": 3.0},
     "external_vbd_weight": 0.5,       # w in value = (1-w)·VOR + w·external VBD (scaled)
@@ -374,6 +376,7 @@ class NeedInfo:
     reason: str
     fills_starter: bool = False
     fills_flex: bool = False
+    penalty: float = 0.0          # points subtracted in recommend() (bench pick while a starter slot is open)
 
 
 def roster_need(position: str, counts: dict, roster: RosterConfig, user_picks_remaining: int,
@@ -396,6 +399,9 @@ def roster_need(position: str, counts: dict, roster: RosterConfig, user_picks_re
     if user_picks_remaining <= total_open and not (fills_starter or fills_flex):
         return NeedInfo(0.0, f"only {user_picks_remaining} picks left for {total_open} open starter slots")
     if fills_starter:
+        if have == 0:
+            return NeedInfo(float(m.get("starter_empty", m["starter_open"])),
+                            f"no {position} rostered yet", fills_starter=True)
         return NeedInfo(float(m["starter_open"]), f"{position} starter slot open", fills_starter=True)
     if fills_flex:
         return NeedInfo(float(m["flex_open"]), "FLEX slot open", fills_flex=True)
@@ -484,6 +490,13 @@ def recommend(state: DraftState, players: list, cfg: Optional[dict] = None) -> l
 
     need_cache = {pos: roster_need(pos, counts, roster, picks_remaining, cfg["need_multipliers"])
                   for pos in by_pos}
+    # A bench pick while a starter or FLEX slot is still open pays a flat penalty (additive, so it
+    # still bites late in the draft when values go negative and multipliers stop separating players).
+    opens, flex_open = open_starter_slots(counts, roster)
+    if sum(opens.values()) + flex_open > 0:
+        for need in need_cache.values():
+            if need.multiplier > 0 and not (need.fills_starter or need.fills_flex):
+                need.penalty = float(cfg["need_multipliers"].get("bench_penalty", 0.0))
 
     recs = []
     for pos, group in by_pos.items():
@@ -500,6 +513,7 @@ def recommend(state: DraftState, players: list, cfg: Optional[dict] = None) -> l
                 wc = wait_cost(p.value, surv_next[p.player_id], exp_alt)
             score = p.value + lam * wc
             adjusted = apply_multipliers(score, need.multiplier, 1.0 if on_clock else avail_now[p.player_id])
+            adjusted -= need.penalty
             recs.append(Recommendation(
                 player=p, score=round(score, 2), adjusted_score=round(adjusted, 2), value=p.value,
                 vor=p.vor, survival=surv_next[p.player_id], availability=avail_now[p.player_id],
@@ -585,11 +599,13 @@ def explain(rec: Recommendation, ctx: RecommendationContext, by_pos: dict, need:
     if need.multiplier == 0:
         out.append(f"Blocked by roster rules: {need.reason}.")
     elif need.fills_starter:
-        out.append(f"Fills an open {p.position} starter slot (need ×{need.multiplier:.2f}).")
+        none_yet = "; none rostered yet" if ctx.counts.get(p.position, 0) == 0 else ""
+        out.append(f"Fills an open {p.position} starter slot{none_yet} (need ×{need.multiplier:.2f}).")
     elif need.fills_flex:
         out.append("Would fill the open FLEX slot.")
     else:
-        out.append(f"Roster need: {need.reason} (×{need.multiplier:.2f}).")
+        pen = f" -{need.penalty:.0f} pts: a starter slot is still open" if need.penalty else ""
+        out.append(f"Roster need: {need.reason} (×{need.multiplier:.2f}){pen}.")
 
     if p.risk_label == "BOOM-BUST":
         out.append(f"Experts disagree sharply (rank σ {p.rank_stddev:.1f}, best {p.rank_best:.0f} / "

@@ -131,7 +131,8 @@ ROSTER = RosterConfig(slots={"QB": 1, "RB": 2, "WR": 2, "TE": 1, "FLEX": 1, "BN"
 
 def test_roster_need_table():
     m = DEFAULT_CONFIG["need_multipliers"]
-    assert roster_need("RB", {}, ROSTER, 15).multiplier == m["starter_open"]
+    assert roster_need("RB", {}, ROSTER, 15).multiplier == m["starter_empty"]      # nothing rostered yet
+    assert roster_need("RB", {"RB": 1}, ROSTER, 15).multiplier == m["starter_open"]
     assert roster_need("RB", {"RB": 2}, ROSTER, 12).multiplier == m["flex_open"]
     assert roster_need("RB", {"RB": 3}, ROSTER, 12).multiplier == m["bench"]           # flex used
     assert roster_need("RB", {"RB": 4}, ROSTER, 12).multiplier == m["bench_deep"]
@@ -148,6 +149,71 @@ def test_roster_need_hard_late_draft_rule():
     assert roster_need("WR", counts, ROSTER, 2).multiplier > 0
     full = {"QB": 1, "RB": 4, "WR": 4, "TE": 2, "FLEX": 0}
     assert roster_need("RB", {"QB": 1, "RB": 5, "WR": 5, "TE": 2}, ROSTER, 1).multiplier == 0.0  # roster full
+
+
+def test_bench_penalty_applies_while_starter_open():
+    players, settings = pool()
+    players += [P(f"DEF{i}", "DEF", 60 - 8 * i, adp=150 + 5 * i) for i in range(6)]
+    settings.roster = RosterConfig(slots={"QB": 1, "RB": 2, "WR": 3, "TE": 1, "FLEX": 1, "DEF": 1, "BN": 6},
+                                   flex_positions=("RB", "WR"))
+    prepare_players(players, settings)
+    pen = DEFAULT_CONFIG["need_multipliers"]["bench_penalty"]
+
+    def state_with(names):
+        """User (slot 1) takes ``names`` at their own picks, everyone else drafts by ADP."""
+        st = make_state(settings, user_slot=1)
+        mine = [next(p for p in players if p.name == n).player_id for n in names]
+        for pid in mine:
+            while not st.on_the_clock:
+                draft_by_adp(st, players, 1, exclude=mine)
+            st.add_pick(pid)
+        while not st.on_the_clock:
+            draft_by_adp(st, players, 1, exclude=mine)
+        return st
+
+    # Starters + FLEX filled except DEF: bench picks pay the penalty, the open DEF slot does not.
+    st = state_with(["QB1", "RB1", "RB2", "RB3", "WR1", "WR2", "WR3", "TE1"])
+    recs = recommend(st, players)
+    assert recs[0].player.position == "DEF"
+    bench = next(r for r in recs if r.player.position == "RB")
+    unpenalised = bench.score * bench.roster_need if bench.score >= 0 else bench.score / bench.roster_need
+    assert bench.adjusted_score == pytest.approx(unpenalised - pen, abs=0.02)
+    assert not any("still open" in b for b in recs[0].reasons)          # the DEF pick itself is not penalised
+    bench_rec = next(r for r in recs[:5] if r.player.position != "DEF")
+    assert any("starter slot is still open" in b for b in bench_rec.reasons)
+
+    # Every starter filled: no penalty anywhere.
+    st2 = state_with(["QB1", "RB1", "RB2", "RB3", "WR1", "WR2", "WR3", "TE1", "DEF1"])
+    for r in recommend(st2, players)[:10]:
+        unpenalised = r.score * r.roster_need if r.score >= 0 else r.score / r.roster_need
+        assert r.adjusted_score == pytest.approx(unpenalised, abs=0.02)
+        assert not any("still open" in b for b in r.reasons)
+
+
+def test_starter_empty_fills_wr_before_fourth_rb(tmp_path):
+    """Mock #2 (slot 3): RB x3 + QB at pick 51 with WR/TE/DEF empty -> not another RB;
+    at pick 99 (WR3 and DEF open) the open DEF slot beats a backup QB."""
+    import json
+    from pathlib import Path
+    import draft_cli
+    from models import load_config, load_players
+    root = Path(__file__).resolve().parents[1]
+    cfg = load_config(root / "config.yaml")
+    full = json.loads((root / "test-data" / "mock-draft-2026-09-04b.json").read_text())
+
+    def top_at(pick):
+        d = dict(full, picks=[r for r in full["picks"] if r["pick"] < pick])
+        feed = tmp_path / f"feed{pick}.json"
+        feed.write_text(json.dumps(d))
+        players = load_players(root / "test-data" / "players.csv")
+        state, _, _, _ = draft_cli.state_from_feed(feed, cfg, players, user_slot=3)
+        ocfg = merge_config(cfg["optimizer"])
+        prepare_players(players, state.settings, ocfg)
+        assert state.on_the_clock and state.current_pick == pick
+        return recommend(state, players, ocfg)[0]
+
+    assert top_at(51).player.position in ("WR", "TE")
+    assert top_at(99).player.position == "DEF"
 
 
 def test_assign_roster_slots():
@@ -378,3 +444,4 @@ def test_merge_config_nested():
     assert cfg["need_multipliers"]["bench"] == 0.5
     assert cfg["need_multipliers"]["starter_open"] == DEFAULT_CONFIG["need_multipliers"]["starter_open"]
     assert DEFAULT_CONFIG["need_multipliers"]["bench"] == 0.85    # defaults untouched
+    assert cfg["need_multipliers"]["starter_empty"] == 1.5 and cfg["need_multipliers"]["bench_penalty"] == 5.0

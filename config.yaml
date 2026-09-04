@@ -52,10 +52,12 @@ optimizer:
   position_value_scale: {K: 0.5, DEF: 0.5}   # projection-reliability discount on VOR
   need_multipliers:
     starter_open: 1.10
+    starter_empty: 1.5             # starter slot open and nothing rostered at the position yet
     flex_open: 1.00
     bench: 0.85
     bench_deep: 0.70
     bench_deep_after: 2
+    bench_penalty: 5               # points off a bench pick while any starter/FLEX slot is open
   confidence_thresholds: {strong: 8.0, moderate: 3.0}
   risk_thresholds: {safe: -0.5, boom_bust: 0.5}
   top_n: 5
