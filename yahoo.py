@@ -15,7 +15,7 @@ import webbrowser
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterable, Optional
-from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import requests
 
@@ -36,7 +36,7 @@ log = logging.getLogger("fantasy-draft.yahoo")
 AUTH_URL = "https://api.login.yahoo.com/oauth2/request_auth"
 TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token"
 API_BASE = "https://fantasysports.yahooapis.com/fantasy/v2/"
-REDIRECT_URI = "oob"
+REDIRECT_URI = "https://localhost:8501/"  # must match the Yahoo app; Yahoo no longer accepts "oob"
 PAGE_SIZE = 25
 
 # Yahoo roster position names -> our position keys. FLEX-type slots map to "FLEX".
@@ -56,6 +56,16 @@ class YahooAuthError(YahooError):
 # --------------------------------------------------------------------------- #
 # OAuth2 + HTTP
 # --------------------------------------------------------------------------- #
+
+
+def extract_code(text: str) -> str:
+    """Accept either the bare authorization code or the full redirect URL Yahoo sent the browser to."""
+    text = text.strip()
+    if "code=" in text:
+        qs = parse_qs(urlparse(text if "://" in text else "http://x/?" + text).query)
+        if qs.get("code"):
+            return qs["code"][0]
+    return text
 
 
 class YahooClient:
@@ -85,7 +95,7 @@ class YahooClient:
     def authorize_url(self) -> str:
         return AUTH_URL + "?" + urlencode({
             "client_id": self.client_id, "redirect_uri": REDIRECT_URI,
-            "response_type": "code", "language": "en-us",
+            "response_type": "code", "language": "en-us", "scope": "fspt-r",
         })
 
     def open_browser(self) -> None:
@@ -113,7 +123,7 @@ class YahooClient:
 
     def exchange_code(self, code: str) -> dict:
         return self._token_request({"grant_type": "authorization_code", "redirect_uri": REDIRECT_URI,
-                                    "code": code.strip()})
+                                    "code": extract_code(code)})
 
     def refresh(self) -> dict:
         if not self.has_token:

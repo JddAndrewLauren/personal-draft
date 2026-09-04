@@ -119,11 +119,18 @@ on each recommendation, and a line in "Why?"); they do not change the score.
 
 ## Yahoo integration
 
-1. Create an app at <https://developer.yahoo.com/apps/> with **Fantasy Sports → Read**
-   permission and redirect URI `oob`.
-2. Copy `.env.example` to `.env` and fill in `YAHOO_CLIENT_ID` and `YAHOO_CLIENT_SECRET`.
-3. In the sidebar: **Authorize with Yahoo** (opens Yahoo), paste the code back, **Exchange
-   code**. The token is cached in `.yahoo_token.json` and refreshed automatically.
+1. Create an app at <https://developer.yahoo.com/apps/create/>: Confidential Client, redirect
+   URI `https://localhost:8501/` (Yahoo rejects `oob`). The create form no longer offers a
+   Fantasy Sports permission: since 2026 Yahoo gates the Fantasy API behind an application at
+   <https://sports.yahoo.com/developer/access/> (personal / single-league use is an accepted
+   category; give them the app's Client ID). Until it is approved, authorization fails with
+   `invalid_scope` and the app stays in manual mode.
+2. Put the Client ID / Secret in 1Password (`dev` vault, item `personal-draft-yahoo`) and run
+   `op run --env-file=.env.template -- .venv/bin/streamlit run app.py`. Without `op`, copy
+   `.env.example` to `.env` and fill in `YAHOO_CLIENT_ID` and `YAHOO_CLIENT_SECRET`.
+3. In the sidebar: **Authorize with Yahoo** (opens Yahoo). After you approve, the browser lands
+   on an `https://localhost:8501/?code=...` page that will not load; copy that URL from the
+   address bar, paste it into the sidebar, **Exchange code**. The token is cached in `.yahoo_token.json` and refreshed automatically.
 4. **Fetch my leagues → pick one → Load league settings & teams.** Roster slots, FLEX
    eligibility, team count and scoring now come from Yahoo. Your draft slot is taken from
    Yahoo once round 1 has started (Yahoo does not publish the order before that); set it

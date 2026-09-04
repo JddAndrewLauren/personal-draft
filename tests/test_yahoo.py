@@ -171,7 +171,7 @@ def test_client_exchange_refresh_and_401_retry(tmp_path):
     )
     c = YahooClient("id", "secret", token_path=tok_path, session=session)
     assert not c.has_token
-    assert "client_id=id" in c.authorize_url() and "redirect_uri=oob" in c.authorize_url()
+    assert "client_id=id" in c.authorize_url() and "redirect_uri=https%3A%2F%2Flocalhost%3A8501%2F" in c.authorize_url()
     c.exchange_code(" CODE123 ")
     assert c.has_token and json.loads(tok_path.read_text())["refresh_token"] == "R1"
     assert session.calls[0][2]["code"] == "CODE123"

@@ -361,7 +361,7 @@ def yahoo_sidebar():
     client: yh.YahooClient = ss().yahoo
     if not client.has_token:
         st.link_button("1. Authorize with Yahoo", client.authorize_url(), use_container_width=True)
-        code = st.text_input("2. Paste the code Yahoo shows you")
+        code = st.text_input("2. Paste the URL Yahoo redirects to (the localhost page will not load; copy it from the address bar)")
         if code and st.button("3. Exchange code", use_container_width=True):
             try:
                 client.exchange_code(code)
