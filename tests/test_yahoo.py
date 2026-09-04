@@ -79,7 +79,7 @@ def test_assign_draft_slots_from_round_one():
 
 
 def test_build_mappings_and_draft_picks():
-    players = load_players(FIX.parent.parent / "data" / "players.csv")
+    players = load_players(FIX.parent / "placeholder_players.csv")
     yrows = parse_players(root("players.xml"))
     result = build_mappings(players, yrows, manual={"josh allen|QB": "40006"})
     m = result["mapping"]

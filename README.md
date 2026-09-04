@@ -33,9 +33,10 @@ so the app can sit beside the Yahoo draft room in a half-width Chrome window.
 
 The browser opens at <http://localhost:8501>. Keep the Yahoo draft room in another window.
 
-`data/players.csv` ships with **placeholder data**: real player names but synthetic projections,
-ADP and rank data so a mock draft works out of the box. Replace it with real projections before
-your draft (see below).
+`data/players.csv` holds Yahoo data for league 59154 scraped on 2026-09-04: season projections
+in the league's scoring (league players page) and Yahoo ADP (draft-analysis page, 467 players,
+no kickers). Re-scrape via Claude in Chrome before the draft to refresh ADP. The old synthetic
+placeholder table lives at `test-data/placeholder_players.csv` for tests and mock drafts.
 
 ## Player data
 
