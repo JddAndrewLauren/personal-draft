@@ -27,6 +27,10 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
+The dark draft-room theme lives in `.streamlit/config.toml`; the CSS layer, HTML fragments and
+responsive (split-window) rules are in `ui.py`. The layout stacks automatically below about 1000px,
+so the app can sit beside the Yahoo draft room in a half-width Chrome window.
+
 The browser opens at <http://localhost:8501>. Keep the Yahoo draft room in another window.
 
 `data/players.csv` ships with **placeholder data**: real player names but synthetic projections,

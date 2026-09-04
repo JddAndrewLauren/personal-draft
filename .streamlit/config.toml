@@ -1,0 +1,22 @@
+# Visual theme for the draft-day UI. Colours/spacing helpers live in ui.py.
+[theme]
+base = "dark"
+primaryColor = "#22d3a5"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#161b26"
+textColor = "#e6e8ee"
+borderColor = "#262d3b"
+font = "Inter, sans-serif"
+headingFont = "Inter, sans-serif"
+codeFont = "JetBrains Mono, monospace"
+baseRadius = "0.6rem"
+showSidebarBorder = true
+
+[theme.sidebar]
+backgroundColor = "#0b0e14"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false

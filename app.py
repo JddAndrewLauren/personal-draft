@@ -19,6 +19,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 import scrape as sc
+import ui
 import yahoo as yh
 from models import (
     DraftState,
@@ -47,8 +48,7 @@ from optimizer import (
 
 st.set_page_config(page_title="Draft Optimizer", page_icon="🏈", layout="wide")
 load_dotenv()
-
-RISK_ICON = {"SAFE": "🟢 SAFE", "BALANCED": "🟡 BALANCED", "BOOM-BUST": "🔴 BOOM-BUST", "—": "—"}
+ui.inject_css()
 
 # --------------------------------------------------------------------------- #
 # Session bootstrap
@@ -292,89 +292,92 @@ def scrape_sync(manual: bool = False) -> dict:
 def sidebar():
     state: DraftState = ss().state
     with st.sidebar:
-        ss().page = st.radio("Page", ["Draft", "Readiness"], horizontal=True, index=0 if ss().page == "Draft" else 1)
-
-        st.subheader("Data")
-        up = st.file_uploader("Players CSV (projections + Yahoo ADP)", type=["csv"], key="players_upload")
-        if up is not None and ss().get("_last_upload") != up.name + str(up.size):
-            try:
-                load_player_file(io.StringIO(up.getvalue().decode("utf-8-sig")), label=up.name)
-                ss()._last_upload = up.name + str(up.size)
-                st.success(f"Loaded {len(ss().players)} players from {up.name}")
-            except Exception as exc:  # noqa: BLE001
-                st.error(f"Could not load CSV: {exc}")
-        ext = st.file_uploader("External VBD / rankings CSV (FantasyPros or generic)", type=["csv"], key="ext_upload")
-        fmt_choice = st.selectbox("External format", ["auto-detect", "FantasyPros ECR / rankings",
-                                                       "FantasyPros projections", "generic (config column_map)"])
-        ext_pos = st.selectbox("Position (single-position exports only)", ["auto", "QB", "RB", "WR", "TE", "K", "DEF"])
-        if ext is not None and st.button("Import external data", use_container_width=True):
-            import_external(ext, fmt_choice, ext_pos)
-        c1, c2 = st.columns(2)
-        if c1.button("Reload from disk", use_container_width=True):
-            try:
-                load_player_file(ss().paths["players_csv"])
-                st.success("Reloaded")
-            except Exception as exc:  # noqa: BLE001
-                st.error(str(exc))
-        if c2.button("Save enriched CSV", use_container_width=True, help="Writes data/players.csv with imported columns"):
-            write_players_csv(ss().players, ss().paths["players_csv"])
-            st.success("Saved data/players.csv")
+        choice = st.segmented_control("Page", ["Draft", "Readiness"], default=ss().page, required=True,
+                                      label_visibility="collapsed", width="stretch")
+        ss().page = choice or ss().page
         if ss().players:
-            st.caption(f"{len(ss().players)} players · source: {ss().get('players_source', '')}")
+            st.caption(f"{len(ss().players)} players · {ss().get('players_source', '')}")
 
-        st.subheader("League")
-        yahoo_locked = bool(state.settings.league_key)
-        teams_n = st.number_input("Teams", 2, 20, state.settings.num_teams, disabled=yahoo_locked)
-        rounds_n = st.number_input("Rounds", 1, 30, state.settings.rounds, disabled=yahoo_locked)
-        slot_n = st.number_input("Your draft slot", 1, int(teams_n), min(state.user_slot, int(teams_n)))
-        if (teams_n, rounds_n, slot_n) != (state.settings.num_teams, state.settings.rounds, state.user_slot):
-            if state.picks and teams_n != state.settings.num_teams:
-                st.warning("Changing team count with picks recorded; pick→slot mapping is recomputed.")
-            state.settings.num_teams = int(teams_n)
-            state.settings.rounds = int(rounds_n)
-            reconcile_rounds(state.settings.roster, int(rounds_n))
-            state.user_slot = int(slot_n)
-            if not yahoo_locked:
-                state.teams = default_teams(int(teams_n), int(slot_n))
-            reprepare()
-            save_state()
-        roster_txt = ", ".join(f"{k}{v}" for k, v in state.settings.roster.slots.items())
-        st.caption(f"Roster: {roster_txt}" + (" (from Yahoo)" if yahoo_locked else " (config.yaml)"))
+        with st.expander("Data", expanded=not ss().players):
+            up = st.file_uploader("Players CSV (projections + Yahoo ADP)", type=["csv"], key="players_upload")
+            if up is not None and ss().get("_last_upload") != up.name + str(up.size):
+                try:
+                    load_player_file(io.StringIO(up.getvalue().decode("utf-8-sig")), label=up.name)
+                    ss()._last_upload = up.name + str(up.size)
+                    st.success(f"Loaded {len(ss().players)} players from {up.name}")
+                except Exception as exc:  # noqa: BLE001
+                    st.error(f"Could not load CSV: {exc}")
+            ext = st.file_uploader("External VBD / rankings CSV (FantasyPros or generic)", type=["csv"], key="ext_upload")
+            fmt_choice = st.selectbox("External format", ["auto-detect", "FantasyPros ECR / rankings",
+                                                           "FantasyPros projections", "generic (config column_map)"])
+            ext_pos = st.selectbox("Position (single-position exports only)", ["auto", "QB", "RB", "WR", "TE", "K", "DEF"])
+            if ext is not None and st.button("Import external data", width="stretch"):
+                import_external(ext, fmt_choice, ext_pos)
+            c1, c2 = st.columns(2)
+            if c1.button("Reload from disk", width="stretch"):
+                try:
+                    load_player_file(ss().paths["players_csv"])
+                    st.success("Reloaded")
+                except Exception as exc:  # noqa: BLE001
+                    st.error(str(exc))
+            if c2.button("Save enriched CSV", width="stretch", help="Writes data/players.csv with imported columns"):
+                write_players_csv(ss().players, ss().paths["players_csv"])
+                st.success("Saved data/players.csv")
 
-        st.subheader("Optimizer")
-        o = ss().ocfg
-        lam = st.slider("Wait-cost weight λ", 0.0, 3.0, float(o["wait_cost_weight"]), 0.1)
-        sd = st.slider("ADP σ (base picks)", 1.0, 20.0, float(o["adp_stddev"]), 0.5)
-        w = st.slider("External VBD weight", 0.0, 1.0, float(o["external_vbd_weight"]), 0.05)
-        topn = st.slider("Recommendations shown", 3, 8, int(o["top_n"]))
-        if (lam, sd, w, topn) != (o["wait_cost_weight"], o["adp_stddev"], o["external_vbd_weight"], o["top_n"]):
-            o["wait_cost_weight"], o["adp_stddev"], o["external_vbd_weight"], o["top_n"] = lam, sd, w, topn
-            reprepare()
-
-        st.subheader("Yahoo")
-        yahoo_sidebar()
-
-        st.subheader("Draft room (Claude in Chrome)")
-        scrape_sidebar()
-
-        st.subheader("State")
-        c1, c2 = st.columns(2)
-        if c1.button("Save now", use_container_width=True):
-            save_state()
-            st.success("Saved")
-        if c2.button("Reload saved", use_container_width=True):
-            p = Path(ss().paths["draft_state"])
-            if p.exists():
-                ss().state = DraftState.load(p)
+        with st.expander("League"):
+            yahoo_locked = bool(state.settings.league_key)
+            teams_n = st.number_input("Teams", 2, 20, state.settings.num_teams, disabled=yahoo_locked)
+            rounds_n = st.number_input("Rounds", 1, 30, state.settings.rounds, disabled=yahoo_locked)
+            slot_n = st.number_input("Your draft slot", 1, int(teams_n), min(state.user_slot, int(teams_n)))
+            if (teams_n, rounds_n, slot_n) != (state.settings.num_teams, state.settings.rounds, state.user_slot):
+                if state.picks and teams_n != state.settings.num_teams:
+                    st.warning("Changing team count with picks recorded; pick→slot mapping is recomputed.")
+                state.settings.num_teams = int(teams_n)
+                state.settings.rounds = int(rounds_n)
+                reconcile_rounds(state.settings.roster, int(rounds_n))
+                state.user_slot = int(slot_n)
+                if not yahoo_locked:
+                    state.teams = default_teams(int(teams_n), int(slot_n))
                 reprepare()
-                st.success("Reloaded")
-        if st.checkbox("Enable reset"):
-            if st.button("Reset draft (clear all picks)", type="primary", use_container_width=True):
-                state.reset()
                 save_state()
-                ss().snapshots_done = set()
-                ss().log.info("Draft reset")
-                st.rerun()
+            roster_txt = ", ".join(f"{k}{v}" for k, v in state.settings.roster.slots.items())
+            st.caption(f"Roster: {roster_txt}" + (" (from Yahoo)" if yahoo_locked else " (config.yaml)"))
+
+        with st.expander("Optimizer"):
+            o = ss().ocfg
+            lam = st.slider("Wait-cost weight λ", 0.0, 3.0, float(o["wait_cost_weight"]), 0.1)
+            sd = st.slider("ADP σ (base picks)", 1.0, 20.0, float(o["adp_stddev"]), 0.5)
+            w = st.slider("External VBD weight", 0.0, 1.0, float(o["external_vbd_weight"]), 0.05)
+            topn = st.slider("Recommendations shown", 3, 8, int(o["top_n"]))
+            if (lam, sd, w, topn) != (o["wait_cost_weight"], o["adp_stddev"], o["external_vbd_weight"], o["top_n"]):
+                o["wait_cost_weight"], o["adp_stddev"], o["external_vbd_weight"], o["top_n"] = lam, sd, w, topn
+                reprepare()
+
+        with st.expander("Pick source", expanded=bool(ss().scrape_enabled or ss().poll_enabled)):
+            tab_room, tab_yahoo = st.tabs(["Draft room", "Yahoo"])
+            with tab_room:
+                scrape_sidebar()
+            with tab_yahoo:
+                yahoo_sidebar()
+
+        with st.expander("State"):
+            c1, c2 = st.columns(2)
+            if c1.button("Save now", width="stretch"):
+                save_state()
+                st.success("Saved")
+            if c2.button("Reload saved", width="stretch"):
+                p = Path(ss().paths["draft_state"])
+                if p.exists():
+                    ss().state = DraftState.load(p)
+                    reprepare()
+                    st.success("Reloaded")
+            if st.checkbox("Enable reset"):
+                if st.button("Reset draft (clear all picks)", key="reset_draft", width="stretch"):
+                    state.reset()
+                    save_state()
+                    ss().snapshots_done = set()
+                    ss().log.info("Draft reset")
+                    st.rerun()
 
 
 def import_external(upload, fmt_choice: str, ext_pos: str):
@@ -414,9 +417,9 @@ def yahoo_sidebar():
             return
     client: yh.YahooClient = ss().yahoo
     if not client.has_token:
-        st.link_button("1. Authorize with Yahoo", client.authorize_url(), use_container_width=True)
+        st.link_button("1. Authorize with Yahoo", client.authorize_url(), width="stretch")
         code = st.text_input("2. Paste the URL Yahoo redirects to (the localhost page will not load; copy it from the address bar)")
-        if code and st.button("3. Exchange code", use_container_width=True):
+        if code and st.button("3. Exchange code", width="stretch"):
             try:
                 client.exchange_code(code)
                 ss().log.info("Yahoo authorization complete")
@@ -427,7 +430,7 @@ def yahoo_sidebar():
         return
 
     st.caption("Authorized ✓")
-    if st.button("Fetch my leagues", use_container_width=True):
+    if st.button("Fetch my leagues", width="stretch"):
         try:
             ss().yahoo_leagues = yh.fetch_leagues(client)
         except Exception as exc:  # noqa: BLE001
@@ -442,20 +445,20 @@ def yahoo_sidebar():
     else:
         ss().yahoo_league_key = st.text_input("League key (e.g. 461.l.12345)", ss().yahoo_league_key or "") or None
 
-    if ss().yahoo_league_key and st.button("Load league settings & teams", use_container_width=True):
+    if ss().yahoo_league_key and st.button("Load league settings & teams", width="stretch"):
         load_yahoo_league(client, ss().yahoo_league_key)
 
     if state.settings.league_key:
         st.caption(f"League: {state.settings.name} ({state.settings.num_teams} teams)")
         ss().poll_enabled = st.toggle("Live sync (poll draft results)", value=ss().poll_enabled)
         ss().poll_interval = st.number_input("Poll every (s)", 2, 60, ss().poll_interval)
-        if st.button("Sync now", use_container_width=True):
+        if st.button("Sync now", width="stretch"):
             r = yahoo_sync(manual=True)
             if r["error"]:
                 st.error(r["error"])
             else:
                 st.success(f"Synced: {r['new']} new picks, {r['conflicts']} conflicts")
-    if st.button("Forget Yahoo token", use_container_width=True):
+    if st.button("Forget Yahoo token", width="stretch"):
         client.clear_token()
         ss().yahoo = None
         st.rerun()
@@ -476,7 +479,7 @@ def scrape_sidebar():
         ss().scrape_team = st.text_input("My team name (as shown in the draft room)", ss().scrape_team)
     if ss().scrape_enabled:
         ss().poll_interval = st.number_input("Poll every (s)", 2, 60, ss().poll_interval, key="scrape_poll")
-    if st.button("Sync feed now", use_container_width=True):
+    if st.button("Sync feed now", width="stretch"):
         r = scrape_sync(manual=True)
         if r["error"]:
             st.error(r["error"])
@@ -525,56 +528,91 @@ def draft_page():
     for m in ss().messages:
         st.info(m)
     ss().messages = []
+    topbar()
     if not players:
-        st.warning("Load a players CSV in the sidebar to begin.")
+        st.html(ui.empty_state())
         return
-
-    yahoo_live = ss().poll_enabled and ss().yahoo is not None and ss().yahoo_league_key
-    if yahoo_live or ss().scrape_enabled:
-        interval = max(2, int(ss().poll_interval))
-        st.fragment(run_every=f"{interval}s")(poll_body)()
 
     recs = recommend(state, players, ss().ocfg)
     maybe_snapshot(recs)
 
-    col_state, col_roster, col_recs = st.columns([1.0, 1.0, 2.2])
-    with col_state:
-        draft_state_panel()
-    with col_roster:
-        roster_panel()
-    with col_recs:
-        recommendations_panel(recs)
+    if state.on_the_clock:
+        st.html(ui.clock_banner(state.current_pick, state.current_round))
+
+    with st.container(key="hero"):
+        col_state, col_roster, col_recs = st.columns([1, 1, 2])
+        with col_state:
+            draft_state_panel()
+        with col_roster:
+            roster_panel()
+        with col_recs:
+            recommendation_hero(recs)
+
+    recommendations_list(recs)
 
     if state.conflicts:
         conflicts_panel()
 
-    st.divider()
     available_table(recs)
-    st.divider()
     manual_controls()
     history_panel()
 
 
-def poll_body():
-    """Body of the auto-refreshing polling fragment (wrapped with st.fragment in draft_page)."""
-    yahoo_live = ss().poll_enabled and ss().yahoo is not None and ss().yahoo_league_key
-    r = yahoo_sync() if yahoo_live else scrape_sync()
+def live_source() -> str | None:
+    """'yahoo' | 'scrape' | None — which remote pick source is being polled."""
+    if ss().poll_enabled and ss().yahoo is not None and ss().yahoo_league_key:
+        return "yahoo"
+    if ss().scrape_enabled:
+        return "scrape"
+    return None
+
+
+def topbar():
+    """Wordmark on the left, live sync status pill on the right (auto-refreshing when polling)."""
     state: DraftState = ss().state
+    with st.container(key="topbar"):
+        c1, c2 = st.columns([3, 2], vertical_alignment="center")
+        sub = f"{state.settings.name} · {state.settings.num_teams} teams · {state.settings.rounds} rounds"
+        c1.html(ui.wordmark(sub))
+        with c2:
+            if ss().players and live_source():
+                interval = max(2, int(ss().poll_interval))
+                st.fragment(run_every=f"{interval}s")(poll_body)()
+            else:
+                render_sync_pill()
+
+
+def render_sync_pill():
+    state: DraftState = ss().state
+    src = live_source()
+    age = f"{time.time() - state.last_sync:.0f}s ago" if state.last_sync else "never"
+    hint = None
+    if src is None:
+        html = ui.pill("Manual mode", "muted", f"last sync {age}" if state.last_sync else None)
+    elif state.sync_status == "lost":
+        label = "Yahoo" if src == "yahoo" else "Draft-room feed"
+        html = ui.pill(f"{label} sync lost · manual mode", "bad", age)
+        hint = state.sync_message
+    elif src == "scrape" and not ss().scrape_updated:
+        html = ui.pill("Draft-room feed not written yet", "warn")
+        hint = f"Waiting for {ss().scrape_path}. Is `/loop 30s /watch-draft` running?"
+    elif src == "scrape" and time.time() - ss().scrape_updated > 120:
+        html = ui.pill(f"Draft-room feed stale ({time.time() - ss().scrape_updated:.0f}s)", "warn", age)
+        hint = "Is the /watch-draft loop still running?"
+    else:
+        label = "Yahoo live" if src == "yahoo" else "Draft room live"
+        html = ui.pill(f"{label} · every {ss().poll_interval}s", "ok", age)
+    st.html(f'<div class="do-pillrow">{html}</div>')
+    if hint:
+        st.caption(hint)
+
+
+def poll_body():
+    """Body of the auto-refreshing polling fragment (wrapped with st.fragment in topbar)."""
+    r = yahoo_sync() if live_source() == "yahoo" else scrape_sync()
     if r["new"] or r["conflicts"]:
         st.rerun(scope="app")
-    age = f"{time.time() - state.last_sync:.0f}s ago" if state.last_sync else "never"
-    label = "Yahoo" if yahoo_live else "Draft-room feed"
-    if state.sync_status == "lost":
-        st.error(f"{label.upper()} SYNC LOST — manual mode active. Last update: {age}. {state.sync_message}")
-        return
-    if not yahoo_live:
-        feed_age = time.time() - ss().scrape_updated if ss().scrape_updated else None
-        if feed_age is None:
-            st.warning(f"Draft-room feed not written yet ({ss().scrape_path}). Is `/loop 30s /watch-draft` running?")
-            return
-        if feed_age > 120:
-            st.warning(f"Draft-room feed is stale ({feed_age:.0f}s old). Is the /watch-draft loop still running?")
-    st.caption(f"{label} polling every {ss().poll_interval}s · last update {age}")
+    render_sync_pill()
 
 
 def maybe_snapshot(recs):
@@ -598,147 +636,164 @@ def maybe_snapshot(recs):
 
 def draft_state_panel():
     state: DraftState = ss().state
-    st.subheader(f"Round {state.current_round}" if not state.is_complete else "Draft complete")
-    c1, c2 = st.columns(2)
-    c1.metric("Current pick", state.current_pick if not state.is_complete else "—")
-    nxt = state.next_user_pick()
-    c2.metric("Your next pick", nxt if nxt else "—")
-    c1.metric("Picks away", state.picks_until_user if state.picks_until_user is not None else "—")
-    on_clock = state.slot_for_pick(state.current_pick) if not state.is_complete else None
-    c2.metric("On the clock", state.team_name(on_clock) if on_clock else "—")
-    if state.on_the_clock:
-        st.success("**YOU ARE ON THE CLOCK**")
-    status = {"manual": "Manual mode (no Yahoo)", "connected": "Yahoo: connected", "lost": "Yahoo: SYNC LOST"}[state.sync_status]
-    age = f"{time.time() - state.last_sync:.0f} s ago" if state.last_sync else "never"
-    (st.error if state.sync_status == "lost" else st.caption)(f"{status} · last update {age}")
-    run = state.last_positions(ss().by_id, 6)
-    if run:
-        st.caption("Last 6 picks: " + " ".join(run))
+    with st.container(border=True):
+        done = state.is_complete
+        title = "Draft complete" if done else f"Round {state.current_round}"
+        sub = "" if done else f"pick {state.current_pick} of {state.total_picks}"
+        nxt = state.next_user_pick()
+        away = state.picks_until_user
+        on_clock = state.slot_for_pick(state.current_pick) if not done else None
+        stats = [
+            ("Current pick", "—" if done else str(state.current_pick), ""),
+            ("Your next pick", str(nxt) if nxt else "—", f"round {(nxt - 1) // state.num_teams + 1}" if nxt else ""),
+            ("Picks away", str(away) if away is not None else "—", "you're up" if away == 0 else ""),
+            ("On the clock", state.team_name(on_clock) if on_clock else "—", ""),
+        ]
+        html = ui.card_title(title, sub) + ui.stat_grid(stats, two=True, highlight=2 if away == 0 else None)
+        run = state.last_positions(ss().by_id, 6)
+        if run:
+            html += ui.pick_run(run, "Last 6")
+        st.html(html)
 
 
 def roster_panel():
     state: DraftState = ss().state
-    st.subheader("Your team")
-    roster_players = [ss().by_id[pid] for pid in state.user_roster_ids() if pid in ss().by_id]
-    unknown = [p for p in state.picks if p.slot == state.user_slot and p.player_id not in ss().by_id]
-    slots = assign_roster_slots(roster_players, state.settings.roster)
-    lines = []
-    for pos, n in state.settings.roster.slots.items():
-        got = slots.get(pos, [])
-        names = [f"{p.name} ({p.projected_points:.0f})" for p in got]
-        for i in range(n):
-            lines.append(f"**{pos}** {names[i] if i < len(names) else '—'}")
-        for extra in names[n:]:
-            lines.append(f"**{pos}+** {extra}")
-    for u in unknown:
-        lines.append(f"**?** {u.player_name or u.player_id}")
-    st.markdown("  \n".join(lines))
+    with st.container(border=True):
+        roster_players = [ss().by_id[pid] for pid in state.user_roster_ids() if pid in ss().by_id]
+        unknown = [p for p in state.picks if p.slot == state.user_slot and p.player_id not in ss().by_id]
+        slots = assign_roster_slots(roster_players, state.settings.roster)
+        rows = ui.roster_rows(state.settings.roster.slots, slots, [u.player_name or u.player_id for u in unknown])
+        filled = sum(1 for r in rows if r.name)
+        st.html(ui.card_title("Your team", f"{filled} / {state.settings.roster.total_slots} filled") + ui.roster_grid(rows))
 
 
-def recommendations_panel(recs):
-    state: DraftState = ss().state
-    st.subheader("Recommendations")
-    if not recs:
-        st.info("No more picks for you." if state.next_user_pick() is None else "Nothing to recommend.")
-        return
-    top_n = int(ss().ocfg["top_n"])
-    conf = recs[0].confidence
-    if conf == "CLOSE":
-        st.warning("CLOSE DECISION between the top options")
-    elif conf == "MODERATE":
-        st.info("Moderate edge for the top option")
+def _rec_stats(r, state: DraftState) -> list:
+    p = r.player
+    fol = state.following_user_pick()
+    value_sub = f"VOR {r.vor:.0f}" + (f" · ext {p.external_vbd_scaled:.0f}" if p.external_vbd_scaled is not None else "")
+    return [
+        ("Score", f"{r.adjusted_score:.0f}", ""),
+        ("Value", f"{r.value:.0f}", value_sub),
+        ("Yahoo ADP", f"{p.adp:.0f}" if p.adp is not None else "—", ""),
+        (f"Avail @{fol}" if fol else "Survival", f"{r.survival:.0%}" if fol else "—", "at your following pick"),
+        ("Wait cost", f"{r.wait_cost:.0f}", ""),
+    ]
+
+
+def _rec_detail(r, state: DraftState) -> str:
+    p = r.player
     my_pick = state.next_user_pick()
-    for i, r in enumerate(recs[:top_n], start=1):
+    detail = f"Proj {p.projected_points:.0f} · Tier {p.tier} {p.position}"
+    if not state.on_the_clock and my_pick:
+        detail += f" · {r.availability:.0%} chance he reaches your pick #{my_pick}"
+    return detail
+
+
+def _rec_button(container, r, state: DraftState, primary: bool):
+    p = r.player
+    if state.on_the_clock:
+        if container.button("✓ I drafted him", key=f"take_{p.player_id}", type="primary" if primary else "secondary", width="stretch"):
+            do_manual_pick(p, state.user_slot, state.current_pick)
+            st.rerun()
+    else:
+        if container.button("Taken by other", key=f"gone_{p.player_id}", width="stretch",
+                            help="Mark as drafted by the team on the clock"):
+            do_manual_pick(p, None, None)
+            st.rerun()
+
+
+def recommendation_hero(recs):
+    state: DraftState = ss().state
+    with st.container(border=True, key="rec_hero"):
+        if not recs:
+            st.html(ui.card_title("Top recommendation"))
+            st.info("No more picks for you." if state.next_user_pick() is None else "Nothing to recommend.")
+            return
+        r = recs[0]
         p = r.player
-        with st.container(border=True):
-            h1, h2 = st.columns([3, 1])
-            h1.markdown(f"### {i}. {p.name} — {p.position} {p.team}")
-            h2.markdown(f"**{r.action}**  \n{RISK_ICON.get(p.risk_label, p.risk_label)}")
-            m = st.columns(5)
-            m[0].metric("Score", f"{r.adjusted_score:.0f}")
-            m[1].metric("Value", f"{r.value:.0f}", help=f"VOR {r.vor:.0f}" + (f", ext VBD {p.external_vbd_scaled:.0f}" if p.external_vbd_scaled is not None else ""))
-            m[2].metric("Yahoo ADP", f"{p.adp:.0f}" if p.adp is not None else "—")
-            fol = state.following_user_pick()
-            m[3].metric(f"Avail @{fol}" if fol else "Survival", f"{r.survival:.0%}" if fol else "—")
-            m[4].metric("Wait cost", f"{r.wait_cost:.0f}")
-            detail = f"Proj {p.projected_points:.0f} · Tier {p.tier} {p.position}"
-            if not state.on_the_clock and my_pick:
-                detail += f" · {r.availability:.0%} chance he reaches your pick #{my_pick}"
-            st.caption(detail)
-            with st.expander("Why?"):
-                st.markdown("\n".join(f"- {b}" for b in r.reasons))
-            b1, b2, _ = st.columns([1, 1, 2])
-            if state.on_the_clock:
-                if b1.button("✓ I drafted him", key=f"take_{p.player_id}"):
-                    do_manual_pick(p, state.user_slot, state.current_pick)
-                    st.rerun()
-            else:
-                if b1.button("Taken by other", key=f"gone_{p.player_id}", help="Mark as drafted by the team on the clock"):
-                    do_manual_pick(p, None, None)
-                    st.rerun()
+        conf = {"CLOSE": ui.badge("CLOSE DECISION", "amber"), "MODERATE": ui.badge("MODERATE EDGE", "muted"),
+                "STRONG": ui.badge("STRONG EDGE", "accent")}.get(r.confidence, "")
+        st.html(ui.card_title("Top recommendation", right=conf)
+                + ui.rec_hero_html(1, p.name, p.position, p.team, r.action, p.risk_label,
+                                   _rec_stats(r, state), _rec_detail(r, state), r.reasons))
+        b1, _ = st.columns([1, 1.4])
+        _rec_button(b1, r, state, primary=True)
+
+
+def recommendations_list(recs):
+    state: DraftState = ss().state
+    top_n = int(ss().ocfg["top_n"])
+    rest = recs[1:top_n]
+    if not rest:
+        return
+    st.html(ui.section("Also consider"))
+    with st.container(key="recs"):
+        for i, r in enumerate(rest, start=2):
+            p = r.player
+            with st.container(border=True):
+                c1, c2, c3, c4 = st.columns([3, 2.8, 0.8, 1.4], vertical_alignment="center")
+                c1.html(ui.rec_row_html(i, p.name, p.position, p.team, r.action, p.risk_label))
+                c2.html(ui.kv([(lbl, val) for lbl, val, _ in _rec_stats(r, state)]))
+                with c3.popover("Why", width="stretch"):
+                    st.caption(_rec_detail(r, state))
+                    st.markdown("\n".join(f"- {b}" for b in r.reasons))
+                _rec_button(c4, r, state, primary=False)
+
+
 
 
 def conflicts_panel():
     state: DraftState = ss().state
-    st.error("SYNC WARNING — local picks disagree with the remote draft results")
-    for c in list(state.conflicts):
-        remote = "Draft room" if c.source == "scrape" else "Yahoo"
-        cols = st.columns([3, 1, 1])
-        cols[0].markdown(f"**Pick {c.pick}** · Local: {name_of(c.local_player_id, c.local_player_name)} · "
-                         f"{remote}: {name_of(c.yahoo_player_id, c.yahoo_player_name)}")
-        if cols[1].button("Keep local", key=f"kl_{c.pick}"):
-            state.resolve_conflict(c.pick, "local")
-            save_state(); ss().log.info("Conflict at pick %d resolved: keep local", c.pick); st.rerun()
-        if cols[2].button(f"Use {remote}", key=f"ky_{c.pick}"):
-            state.resolve_conflict(c.pick, "yahoo")
-            save_state(); ss().log.info("Conflict at pick %d resolved: use %s", c.pick, remote); st.rerun()
+    with st.container(border=True):
+        st.html(ui.section("Sync conflicts", ui.badge("local picks disagree with the remote draft results", "red")))
+        for c in list(state.conflicts):
+            remote = "Draft room" if c.source == "scrape" else "Yahoo"
+            cols = st.columns([3, 1, 1], vertical_alignment="center")
+            cols[0].markdown(f"**Pick {c.pick}** · Local: {name_of(c.local_player_id, c.local_player_name)} · "
+                             f"{remote}: {name_of(c.yahoo_player_id, c.yahoo_player_name)}")
+            if cols[1].button("Keep local", key=f"kl_{c.pick}", width="stretch"):
+                state.resolve_conflict(c.pick, "local")
+                save_state(); ss().log.info("Conflict at pick %d resolved: keep local", c.pick); st.rerun()
+            if cols[2].button(f"Use {remote}", key=f"ky_{c.pick}", width="stretch"):
+                state.resolve_conflict(c.pick, "yahoo")
+                save_state(); ss().log.info("Conflict at pick %d resolved: use %s", c.pick, remote); st.rerun()
 
 
 def available_table(recs):
     state: DraftState = ss().state
-    st.subheader("Available players")
-    f1, f2, f3 = st.columns([2, 2, 2])
-    pos = f1.pills("Position", ["ALL", "QB", "RB", "WR", "TE", "FLEX", "K", "DEF"], default="ALL", key="pos_filter") or "ALL"
-    risk = f2.pills("Risk", ["ALL", "SAFE", "BALANCED", "BOOM-BUST"], default="ALL", key="risk_filter") or "ALL"
-    query = f3.text_input("Search", placeholder="player name…")
-    q = query.strip().lower()
-    rows = []
+    st.html(ui.section("Available players"))
+    with st.container(key="filters"):
+        f1, f2, f3, f4 = st.columns([2.4, 1.8, 1.6, 1], vertical_alignment="bottom")
+        pos = f1.pills("Position", ["ALL", "QB", "RB", "WR", "TE", "FLEX", "K", "DEF"], default="ALL", key="pos_filter") or "ALL"
+        risk = f2.pills("Risk", ["ALL", "SAFE", "BALANCED", "BOOM-BUST"], default="ALL", key="risk_filter") or "ALL"
+        query = f3.text_input("Search", placeholder="player name…")
+        show_all = f4.toggle("All columns", key="all_cols", help="Also show VOR, external VBD, roster need and rank σ")
     fol = state.following_user_pick()
-    for rank, r in enumerate(recs, start=1):
-        p = r.player
-        if pos == "FLEX" and p.position not in state.settings.roster.flex_positions:
-            continue
-        if pos not in ("ALL", "FLEX") and p.position != pos:
-            continue
-        if risk != "ALL" and p.risk_label != risk:
-            continue
-        if q and q not in p.name.lower():
-            continue
-        rows.append({
-            "Rank": rank, "Player": p.name, "Pos": p.position, "Team": p.team,
-            "Proj": p.projected_points, "VOR": p.vor,
-            "Ext VBD": p.external_vbd_scaled, "Value": p.value, "Tier": p.tier,
-            "Yahoo ADP": p.adp, "Reach my pick": None if state.on_the_clock else r.availability,
-            "Survival": r.survival if fol else None, "Wait cost": r.wait_cost,
-            "Need": r.roster_need, "Score": r.adjusted_score,
-            "Risk": p.risk_label, "Rank σ": p.rank_stddev,
-        })
+    rows = ui.available_rows(recs, state.settings.roster.flex_positions, state.on_the_clock, fol, pos, risk, query)
     df = pd.DataFrame(rows)
     if df.empty:
         st.info("No players match.")
         return
-    if state.on_the_clock:
-        df = df.drop(columns=["Reach my pick"])
+    cols = ui.table_columns(state.on_the_clock, show_all)
+    for c in ("Reach my pick", "Survival"):
+        if c in cols:
+            df[c] = df[c] * 100
+    styled = df[cols].style.map(lambda v: f"color:{ui.POS_COLORS.get(v, '#94a3b8')};font-weight:700", subset=["Pos"])
     st.dataframe(
-        df, hide_index=True, use_container_width=True, height=520,
+        styled, hide_index=True, width="stretch", height=440,
         column_config={
+            "Rank": st.column_config.NumberColumn(width="small"),
+            "Pos": st.column_config.TextColumn(width="small"),
+            "Team": st.column_config.TextColumn(width="small"),
+            "Tier": st.column_config.NumberColumn(width="small"),
             "Proj": st.column_config.NumberColumn(format="%.0f"),
             "VOR": st.column_config.NumberColumn(format="%.0f"),
             "Ext VBD": st.column_config.NumberColumn(format="%.0f"),
             "Value": st.column_config.NumberColumn(format="%.0f"),
-            "Yahoo ADP": st.column_config.NumberColumn(format="%.1f"),
-            "Reach my pick": st.column_config.ProgressColumn(format="%.0f%%", min_value=0, max_value=1),
-            "Survival": st.column_config.ProgressColumn(format="%.0f%%", min_value=0, max_value=1,
+            "Yahoo ADP": st.column_config.NumberColumn("ADP", format="%.1f"),
+            "Reach my pick": st.column_config.ProgressColumn(format="%.0f%%", min_value=0, max_value=100,
+                                                             help="P(still available at your next pick)"),
+            "Survival": st.column_config.ProgressColumn(format="%.0f%%", min_value=0, max_value=100,
                                                         help="P(still available at your following pick)"),
             "Wait cost": st.column_config.NumberColumn(format="%.1f"),
             "Need": st.column_config.NumberColumn(format="%.2f"),
@@ -750,32 +805,32 @@ def available_table(recs):
 
 def manual_controls():
     state: DraftState = ss().state
-    st.subheader("Mark player drafted")
+    st.html(ui.section("Mark player drafted"))
     drafted = state.drafted_ids()
     avail = sorted((p for p in ss().players if p.player_id not in drafted),
                    key=lambda p: (p.adp if p.adp is not None else 999, -p.projected_points))
     by_id = ss().by_id
-    with st.form("manual_pick", clear_on_submit=True):
-        c1, c2, c3, c4 = st.columns([3, 2, 1, 1])
-        choice = c1.selectbox("Player", [p.player_id for p in avail], index=None, placeholder="type to search…",
-                              format_func=lambda pid: player_label(by_id[pid]))
-        slot_opts = sorted(t.slot for t in state.teams) or list(range(1, state.num_teams + 1))
-        default_slot = state.slot_for_pick(state.current_pick) if not state.is_complete else slot_opts[0]
-        default_idx = slot_opts.index(default_slot) if default_slot in slot_opts else 0
-        slot = c2.selectbox("Drafted by", slot_opts, index=default_idx,
-                            format_func=lambda s: f"{s}. {state.team_name(s)}" + (" (you)" if s == state.user_slot else ""))
-        pick_no = c3.number_input("Pick", 1, state.total_picks, min(state.current_pick, state.total_picks))
-        submitted = c4.form_submit_button("Mark drafted", use_container_width=True)
-    if submitted:
-        if choice is None:
-            st.error("Pick a player first.")
-        else:
-            do_manual_pick(by_id[choice], int(slot), int(pick_no))
+    with st.container(key="manual", border=True):
+        with st.form("manual_pick", clear_on_submit=True, border=False):
+            c1, c2, c3, c4 = st.columns([3, 2, 1, 1.2], vertical_alignment="bottom")
+            choice = c1.selectbox("Player", [p.player_id for p in avail], index=None, placeholder="type to search…",
+                                  format_func=lambda pid: player_label(by_id[pid]))
+            slot_opts = sorted(t.slot for t in state.teams) or list(range(1, state.num_teams + 1))
+            default_slot = state.slot_for_pick(state.current_pick) if not state.is_complete else slot_opts[0]
+            default_idx = slot_opts.index(default_slot) if default_slot in slot_opts else 0
+            slot = c2.selectbox("Drafted by", slot_opts, index=default_idx,
+                                format_func=lambda s: f"{s}. {state.team_name(s)}" + (" (you)" if s == state.user_slot else ""))
+            pick_no = c3.number_input("Pick", 1, state.total_picks, min(state.current_pick, state.total_picks))
+            submitted = c4.form_submit_button("Mark drafted", width="stretch")
+        if submitted:
+            if choice is None:
+                st.error("Pick a player first.")
+            else:
+                do_manual_pick(by_id[choice], int(slot), int(pick_no))
+                st.rerun()
+        if st.button("↩ Undo last pick", type="tertiary", disabled=not state.picks):
+            do_undo()
             st.rerun()
-    u1, u2, _ = st.columns([1, 1, 4])
-    if u1.button("Undo last pick", use_container_width=True, disabled=not state.picks):
-        do_undo()
-        st.rerun()
 
 
 def history_panel():
@@ -790,7 +845,7 @@ def history_panel():
             rows.append({"Pick": p.pick, "Round": p.round, "Team": state.team_name(p.slot),
                          "Player": pl.name if pl else (p.player_name or p.player_id),
                          "Pos": pl.position if pl else "?", "Source": p.source + (" ✓" if p.confirmed else "")})
-        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True, height=300)
+        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch", height=300)
 
 
 # --------------------------------------------------------------------------- #
@@ -801,7 +856,7 @@ def history_panel():
 def readiness_page():
     state: DraftState = ss().state
     players = ss().players
-    st.header("Draft readiness")
+    topbar()
     client = ss().yahoo
     authed = client is not None and client.has_token
     have_yahoo_players = bool(ss().yahoo_players)
@@ -819,69 +874,75 @@ def readiness_page():
         ("External VBD / risk data", with_ext > 0, f"{with_ext} players carry external data (optional)"),
         ("Draft state persistence", Path(ss().paths["draft_state"]).exists() or not state.picks, ss().paths["draft_state"]),
     ]
-    for label, ok, note in checks:
-        st.markdown(f"{'✅' if ok else '❌'} **{label}** — {note}")
+    ok_n = sum(1 for _, ok, _ in checks if ok)
+    st.html(ui.section("Draft readiness", ui.badge(f"{ok_n} / {len(checks)} ready", "accent" if ok_n == len(checks) else "amber"))
+            + ui.check_cards(checks))
 
-    st.divider()
-    st.subheader("Yahoo player pool & ADP")
-    c1, c2, c3 = st.columns(3)
-    if c1.button("Fetch Yahoo player pool (~20 requests)", disabled=not (authed and ss().yahoo_league_key)):
-        prog = st.progress(0, text="Fetching…")
-        try:
-            rows = yh.fetch_all_players(client, ss().yahoo_league_key, max_players=600,
-                                        progress=lambda n: prog.progress(min(n / 600, 1.0), text=f"{n} players"))
-            yh.save_yahoo_players(rows, ss().paths["yahoo_players_csv"])
-            ss().yahoo_players = rows
-            refresh_mapping()
-            st.success(f"Fetched {len(rows)} players; {len(ss().mapping)} mapped")
-        except Exception as exc:  # noqa: BLE001
-            st.error(f"Fetch failed: {exc}")
-    if c2.button("Fill missing ADP from Yahoo", disabled=not have_yahoo_players):
-        n = yh.fill_adp_from_yahoo(players, ss().yahoo_players)
-        reprepare()
-        st.success(f"Filled ADP for {n} players")
-    if c3.button("Overwrite all ADP with Yahoo", disabled=not have_yahoo_players):
-        n = yh.fill_adp_from_yahoo(players, ss().yahoo_players, overwrite=True)
-        reprepare()
-        st.success(f"Set ADP for {n} players")
-    if have_yahoo_players:
-        st.caption(f"{len(ss().yahoo_players)} Yahoo players cached in {ss().paths['yahoo_players_csv']}")
+    with st.container(border=True):
+        st.html(ui.card_title("Yahoo player pool & ADP"))
+        c1, c2, c3 = st.columns(3)
+        if c1.button("Fetch Yahoo player pool (~20 requests)", width="stretch", disabled=not (authed and ss().yahoo_league_key)):
+            prog = st.progress(0, text="Fetching…")
+            try:
+                rows = yh.fetch_all_players(client, ss().yahoo_league_key, max_players=600,
+                                            progress=lambda n: prog.progress(min(n / 600, 1.0), text=f"{n} players"))
+                yh.save_yahoo_players(rows, ss().paths["yahoo_players_csv"])
+                ss().yahoo_players = rows
+                refresh_mapping()
+                st.success(f"Fetched {len(rows)} players; {len(ss().mapping)} mapped")
+            except Exception as exc:  # noqa: BLE001
+                st.error(f"Fetch failed: {exc}")
+        if c2.button("Fill missing ADP from Yahoo", width="stretch", disabled=not have_yahoo_players):
+            n = yh.fill_adp_from_yahoo(players, ss().yahoo_players)
+            reprepare()
+            st.success(f"Filled ADP for {n} players")
+        if c3.button("Overwrite all ADP with Yahoo", width="stretch", disabled=not have_yahoo_players):
+            n = yh.fill_adp_from_yahoo(players, ss().yahoo_players, overwrite=True)
+            reprepare()
+            st.success(f"Set ADP for {n} players")
+        if have_yahoo_players:
+            st.caption(f"{len(ss().yahoo_players)} Yahoo players cached in {ss().paths['yahoo_players_csv']}")
 
-    st.subheader(f"Unmatched players: {len(ss().unmatched)}")
-    if ss().unmatched:
-        st.dataframe(pd.DataFrame([{"Player": p.name, "Pos": p.position, "Team": p.team, "Proj": p.projected_points,
-                                    "ADP": p.adp} for p in ss().unmatched]), hide_index=True, use_container_width=True, height=240)
-        st.markdown("**Save a manual mapping**")
-        c1, c2, c3 = st.columns([2, 3, 1])
-        unmatched_by_id = {p.player_id: p for p in ss().unmatched}
-        local_id = c1.selectbox("Local player", list(unmatched_by_id),
-                                format_func=lambda pid: f"{unmatched_by_id[pid].name} ({unmatched_by_id[pid].position} {unmatched_by_id[pid].team})")
-        local = unmatched_by_id.get(local_id)
-        ypool = {r["yahoo_player_id"]: r for r in ss().yahoo_players if local is None or r["position"] == local.position}
-        yid = c2.selectbox("Yahoo player", list(ypool), index=None, placeholder="type to search…",
-                           format_func=lambda i: f"{ypool[i]['name']} ({ypool[i]['position']} {ypool[i]['team']}) · ADP {ypool[i]['adp'] or '—'}")
-        yrow = ypool.get(yid)
-        if c3.button("Save mapping") and local and yrow:
-            manual = load_mappings(ss().paths["mappings_csv"])
-            manual[local.player_id] = yrow["yahoo_player_id"]
-            save_mappings(ss().paths["mappings_csv"], manual, names={local.player_id: local.name})
-            refresh_mapping()
-            ss().log.info("Manual mapping saved: %s -> %s", local.name, yrow["yahoo_player_id"])
-            st.success(f"Mapped {local.name} → {yrow['name']}")
-            st.rerun()
-    elif not have_yahoo_players:
-        st.caption("Fetch the Yahoo player pool to check mappings.")
+    with st.container(border=True):
+        st.html(ui.card_title("Unmatched players", f"{len(ss().unmatched)}"))
+        if ss().unmatched:
+            st.dataframe(pd.DataFrame([{"Player": p.name, "Pos": p.position, "Team": p.team, "Proj": p.projected_points,
+                                        "ADP": p.adp} for p in ss().unmatched]), hide_index=True, width="stretch", height=240)
+            st.markdown("**Save a manual mapping**")
+            c1, c2, c3 = st.columns([2, 3, 1], vertical_alignment="bottom")
+            unmatched_by_id = {p.player_id: p for p in ss().unmatched}
+            local_id = c1.selectbox("Local player", list(unmatched_by_id),
+                                    format_func=lambda pid: f"{unmatched_by_id[pid].name} ({unmatched_by_id[pid].position} {unmatched_by_id[pid].team})")
+            local = unmatched_by_id.get(local_id)
+            ypool = {r["yahoo_player_id"]: r for r in ss().yahoo_players if local is None or r["position"] == local.position}
+            yid = c2.selectbox("Yahoo player", list(ypool), index=None, placeholder="type to search…",
+                               format_func=lambda i: f"{ypool[i]['name']} ({ypool[i]['position']} {ypool[i]['team']}) · ADP {ypool[i]['adp'] or '—'}")
+            yrow = ypool.get(yid)
+            if c3.button("Save mapping", width="stretch") and local and yrow:
+                manual = load_mappings(ss().paths["mappings_csv"])
+                manual[local.player_id] = yrow["yahoo_player_id"]
+                save_mappings(ss().paths["mappings_csv"], manual, names={local.player_id: local.name})
+                refresh_mapping()
+                ss().log.info("Manual mapping saved: %s -> %s", local.name, yrow["yahoo_player_id"])
+                st.success(f"Mapped {local.name} → {yrow['name']}")
+                st.rerun()
+        elif not have_yahoo_players:
+            st.caption("Fetch the Yahoo player pool to check mappings.")
+        else:
+            st.caption("Every local player maps to a Yahoo player.")
 
     if ss().external_reports:
-        st.subheader("External imports")
-        for rep in ss().external_reports:
-            st.markdown(f"- **{rep['file']}** ({rep['format']}): {rep['matched']} / {rep['rows']} matched"
-                        + (f"; unmatched: {', '.join(rep['unmatched'][:10])}" if rep["unmatched"] else ""))
+        with st.container(border=True):
+            st.html(ui.card_title("External imports"))
+            for rep in ss().external_reports:
+                st.markdown(f"- **{rep['file']}** ({rep['format']}): {rep['matched']} / {rep['rows']} matched"
+                            + (f"; unmatched: {', '.join(rep['unmatched'][:10])}" if rep["unmatched"] else ""))
 
-    st.subheader("Replacement levels (league-specific)")
-    if ss().get("replacement"):
-        st.dataframe(pd.DataFrame([{"Pos": k, "Replacement pts": round(v, 1)} for k, v in ss().replacement.items()]),
-                     hide_index=True)
+    with st.container(border=True):
+        st.html(ui.card_title("Replacement levels", "league-specific"))
+        if ss().get("replacement"):
+            st.dataframe(pd.DataFrame([{"Pos": k, "Replacement pts": round(v, 1)} for k, v in ss().replacement.items()]),
+                         hide_index=True)
 
 
 # --------------------------------------------------------------------------- #
