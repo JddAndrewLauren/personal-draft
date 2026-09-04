@@ -69,6 +69,12 @@ Supported out of the box:
 - **FantasyPros projections export** (`Player, Team, …, FPTS`). Overwrites projected points.
   Pick the position in the sidebar for single-position exports.
 - **Generic CSV**: map columns under `import.column_map` in `config.yaml`.
+- **FantasyPros DraftSheets workbook** (`DraftSheets_2026.xlsx`): `python draftsheets.py <xlsx>`
+  re-implements the workbook's formulas (per-position points, games-missed discount, ECR-blended
+  projection, FLEX-aware baselines, VBD, tiers) under the roster and scoring in `config.yaml`,
+  writes `data/draftsheets_2026.csv`, and adds `VBD`, `ExternalTier`, `RankAvg` (ECR overall rank)
+  and `DraftSheetPts` to `data/players.csv`. `--validate` checks the replication against the
+  workbook's own cached numbers first (0 mismatches on the 2026-09-04 sheet).
 
 Rows are matched by normalised name + position (team breaks ties). No fuzzy matching, so
 check the Readiness page for unmatched rows and fix names in the CSV.
