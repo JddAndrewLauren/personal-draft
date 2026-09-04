@@ -74,3 +74,12 @@ def test_write_picks_roundtrip(tmp_path):
     assert [r["pick"] for r in feed["picks"]] == [1, 2]
     assert feed["picks"][0]["nfl_team"] == "" and feed["picks"][1]["nfl_team"] == "CIN"
     assert feed["updated"] > 0
+
+
+def test_settings_from_config_reads_league_scoring_and_no_kicker():
+    cfg = load_config("config.yaml")
+    s = settings_from_config(cfg)
+    assert s.scoring["11"] == 0.0 and s.scoring["18"] == -2.0
+    assert "K" not in s.roster.starter_positions
+    assert s.roster.flex_positions == ("RB", "WR")
+    assert s.rounds == 15 and s.roster.total_slots == 15

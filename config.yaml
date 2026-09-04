@@ -2,25 +2,40 @@
 
 league:
   teams: 12
-  name: "Local league"
-  # Yahoo default roster (15 slots = 15 rounds). Keys are Yahoo position names; FLEX is shared
-  # by flex_positions. If slots and draft.rounds disagree, the bench is resized to match rounds.
+  name: "San Diego City Slackers"   # Yahoo league 59154, https://football.fantasysports.yahoo.com/league/sdcs
+  # From https://football.fantasysports.yahoo.com/f1/59154/settings (grabbed 2026-09-04).
+  # Yahoo roster: QB, WR x3, RB x2, TE, W/R, DEF, BN x6, IR x3. No kicker slot. IR slots are
+  # not drafted, so 15 draftable slots = 15 rounds. Keys are Yahoo position names; FLEX is
+  # shared by flex_positions. If slots and draft.rounds disagree, the bench is resized to match rounds.
   roster:
     QB: 1
     RB: 2
     WR: 3
     TE: 1
     FLEX: 1
-    K: 1
+    K: 0
     DEF: 1
-    BN: 5
-  flex_positions: [RB, WR, TE]
+    BN: 6
+  flex_positions: [RB, WR]        # W/R flex: TE is not flex-eligible
   # Hard caps: recommendations at a position stop once you hold this many.
   max_per_position:
     QB: 2
     TE: 2
-    K: 1
+    K: 0
     DEF: 1
+  # Scoring (Yahoo stat id -> points), used when a projections CSV has raw stats but no points.
+  # Standard scoring: 0 PPR, pass 25 yds/pt, pass TD 4, INT -1, rush/rec 10 yds/pt, TD 6,
+  # fumbles -1, fumbles lost -2. Yahoo's own scoring overrides this once the league is loaded.
+  scoring:
+    "4": 0.04     # passing yards
+    "5": 4        # passing TD
+    "6": -1       # interception
+    "9": 0.1      # rushing yards
+    "10": 6       # rushing TD
+    "11": 0       # reception (no PPR)
+    "12": 0.1     # receiving yards
+    "13": 6       # receiving TD
+    "18": -2      # fumble lost
 
 draft:
   user_slot: 7

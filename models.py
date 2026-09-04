@@ -576,8 +576,9 @@ def settings_from_config(cfg: dict) -> LeagueSettings:
     )
     rounds = int(draft.get("rounds") or roster.total_slots)
     reconcile_rounds(roster, rounds)
+    scoring = {str(k): float(v) for k, v in (league.get("scoring") or {}).items()}
     return LeagueSettings(num_teams=int(league.get("teams", 12)), rounds=rounds, roster=roster,
-                          name=str(league.get("name", "Local league")))
+                          scoring=scoring, name=str(league.get("name", "Local league")))
 
 
 def reconcile_rounds(roster: RosterConfig, rounds: int) -> None:
