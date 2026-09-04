@@ -1,107 +1,108 @@
 ---
 name: queue-draft
-description: Load the Yahoo draft-room Queue with the optimizer's top 2-3 available players so an expired clock autodrafts the app's choice instead of Yahoo's. Run right after a /watch-draft tick whenever the user's pick is 3 or fewer away, or when the user says "load the queue", "star the recs", or invokes /queue-draft.
+description: Load the Yahoo draft-room Queue with the optimizer's top 3-4 available players so an expired clock autodrafts the app's choice instead of Yahoo's. Run right after a /watch-draft tick whenever the user's pick is 3 or fewer away, or when the user says "load the queue", "star the recs", or invokes /queue-draft.
 ---
 
 # /queue-draft — star the optimizer's top picks in Yahoo's Queue
 
-Why: in mock #2 two expired clocks put the team into Yahoo **autopick mode** and the room finished
-the draft in about a minute. Yahoo's autodraft takes from the Queue in order, so a queue that
-always holds the app's top 2-3 turns a missed clock into the app's own pick. This skill **writes
-to the room** (stars players); `/watch-draft` stays read-only.
+Why: an expired clock autodrafts from the Queue top-down; an empty Queue lets Yahoo pick for you
+and, after the first miss, flips the team into **autopick mode**. This skill **writes to the room**
+(stars and unstars players); `/watch-draft` stays read-only. Selectors below were verified live in
+mock #3 (2026-09-04, `docs/mock-draft-2026-09-04c.md`).
 
 ## Steps
 
-1. **Get the targets** (repo root as cwd):
+1. **Get the targets** (repo root as cwd). Ask for 4 when the user's next two picks are
+   back-to-back (turn slots 1 and 12), else 3:
 
    ```bash
-   .venv/bin/python draft_cli.py recs --n 3 --ids
+   .venv/bin/python draft_cli.py recs --n 4 --ids
    ```
 
-   One line per rec: `yahoo_id|name|pos` (the id can be blank for players without a Yahoo id;
-   fall back to searching by name for those). `no more picks for you` means stop.
+   One line per rec: `yahoo_id|name|pos`. The id can be blank (some DEFs); the script then finds
+   the row by name + position. `no more picks for you` means stop.
 2. **Find the tab.** If the Chrome tools are not loaded, load them in ONE ToolSearch call:
    `select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__javascript_tool,mcp__claude-in-chrome__computer`.
    `tabs_context_mcp`, pick the tab on `football.fantasysports.yahoo.com/draftclient/`. Never open
    a new tab or navigate the draft tab.
 3. **Star the targets** with ONE `javascript_tool` call. Fill `TARGETS` from step 1. The script
-   refuses to run while on the clock (the row's star turns into a Draft button on your turn;
-   clicking it drafted the player at pick 22 in mock #2) and never clicks anything labelled Draft.
+   refuses to run on the clock (the star controls turn into Draft buttons on your turn) and never
+   clicks anything labelled Draft.
 
    ```js
-   const TARGETS = [['30123','Bijan Robinson','RB'], ['33466','Puka Nacua','WR'], ['100034','Texans','DEF']];
+   const TARGETS = [['42654','Jadarian Price','RB'], ['','Jets','DEF'], ['31896','DK Metcalf','WR']];
    const wait = ms => new Promise(s => setTimeout(s, ms));
    const txt = e => (e?.textContent || '').trim();
-   const isDraft = e => /draft/i.test(txt(e)) || /draft/i.test(e?.getAttribute?.('aria-label') || '') || /draft/i.test(e?.getAttribute?.('title') || '');
-   let stop = /your turn/i.test(document.title) ? 'ON CLOCK - skipped' : null;
-   const CTRL = 'button,[role=button],[role=checkbox],svg,a';
-   const rowOf = el => el?.closest('tr') || el?.closest('[role=row]') || el?.closest('li');
-   const starOf = row => [...row.querySelectorAll(CTRL)].find(c => !isDraft(c) && !c.closest('[data-id]')); // first control that is not the name link and not Draft
-   const queued = row => { const s = starOf(row); return !!(s && (s.getAttribute('aria-pressed') === 'true' || s.getAttribute('aria-checked') === 'true' || /active|selected|queued|filled/i.test(s.className?.baseVal ?? s.className ?? ''))); };
-   const setSearch = async v => {          // React input: native setter + input event
-     const inp = document.querySelector('input[type=search],input[placeholder*="earch" i],input[type=text]');
-     if (!inp) return false;
-     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(inp, v);
-     inp.dispatchEvent(new Event('input', { bubbles: true }));
-     await wait(1200);
-     return true;
-   };
-   // Players tab must be showing (watch-draft leaves the room on Results).
-   if (!stop && (!document.querySelector('[data-id]') || /^Pick/.test(document.querySelector('table')?.rows[0]?.innerText || ''))) {
-     [...document.querySelectorAll('button,div,span')].find(e => e.children.length === 0 && txt(e) === 'Players')?.click();
-     await wait(800);
-   }
-   if (!stop && [...document.querySelectorAll('tr,[role=row]')].some(r => isDraft(starOf(r)))) stop = 'ON CLOCK - skipped (Draft controls visible)';
+   // Title is "N picks until your turn" off the clock and "YOUR TURN, DRAFT NOW" on it.
+   const onClock = () => /your turn/i.test(document.title) && !/until your turn/i.test(document.title);
+   let stop = onClock() ? 'ON CLOCK - skipped' : null;
    const out = [];
-   for (const [id, name, pos] of (stop ? [] : TARGETS)) {
-     let row = id ? rowOf(document.querySelector(`[data-id="${id}"]`)) : null;
-     if (!row) {                                             // outside the top ~100: search
-       const needle = pos === 'DEF' ? name : name.split(' ').slice(-1)[0];
-       if (await setSearch(needle)) {
-         row = id ? rowOf(document.querySelector(`[data-id="${id}"]`)) : null;
-         if (!row) row = [...document.querySelectorAll('tr,[role=row]')].find(r => r.innerText.includes(name.split(' ').slice(-1)[0]) && r.innerText.includes(pos));
-       }
+   if (!stop) {
+     // 1. Unstar queued players that are no longer targets (queue rows and table rows both carry ys-removequeue).
+     const ids = new Set(TARGETS.map(t => t[0]).filter(Boolean));
+     for (const q of [...document.querySelectorAll('.ys-removequeue[data-id]')]) {
+       if (ids.has(q.dataset.id)) continue;
+       q.querySelector('button')?.click(); await wait(400); out.push('unstarred stale: ' + q.dataset.id);
      }
-     if (!row) { out.push(`${name}: not found`); continue; }
-     const star = starOf(row);
-     if (!star) { out.push(`${name}: no star control`); continue; }
-     if (isDraft(star)) { out.push(`${name}: skipped (Draft control)`); continue; }
-     if (queued(row)) { out.push(`${name}: already queued`); continue; }
-     star.click(); await wait(400);
-     out.push(`${name}: queued`);
+     // 2. Players tab must be showing (watch-draft leaves the room on Results).
+     if (!document.querySelector('.ys-addqueue')) {
+       [...document.querySelectorAll('button,div,span')].find(e => e.children.length === 0 && txt(e) === 'Players')?.click();
+       await wait(800);
+     }
+     const setSearch = async v => {          // React input: native setter + input event
+       const inp = document.querySelector('input[placeholder*="earch" i]'); if (!inp) return false;
+       Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(inp, v);
+       inp.dispatchEvent(new Event('input', { bubbles: true })); await wait(1300); return true;
+     };
+     const findStar = (id, name, pos) => {
+       if (id) { const q = document.querySelector(`.ys-addqueue[data-id="${id}"]`); if (q) return q; }
+       const needle = pos === 'DEF' ? name : name.split(' ').slice(-1)[0];
+       const tr = [...document.querySelectorAll('table tbody tr')].find(r => r.innerText.includes(needle) && r.innerText.includes(pos));
+       return tr?.querySelector('.ys-addqueue') || null;
+     };
+     // 3. Star in rank order: the Queue is ordered by star time, so a re-starred player goes to the end.
+     for (const [id, name, pos] of TARGETS) {
+       if (id && document.querySelector(`.ys-removequeue[data-id="${id}"]`)) { out.push(`${name}: already queued`); continue; }
+       let q = findStar(id, name, pos);
+       if (!q) { await setSearch(pos === 'DEF' ? name : name.split(' ').slice(-1)[0]); q = findStar(id, name, pos); }
+       if (!q) {
+         const drafted = !!document.querySelector('table tbody tr svg[data-icon="checkmark-circle-filled"]');
+         out.push(`${name}: ${drafted ? 'already drafted' : 'not found'}`); continue;
+       }
+       q.querySelector('button').click(); await wait(400); out.push(`${name}: queued`);
+     }
+     await setSearch('');
+     const panel = [...document.querySelectorAll('div,span,p')].find(e => e.children.length === 0 && /Autodraft will pick from queue/i.test(txt(e)))?.parentElement?.parentElement;
+     out.push('queue: ' + [...(panel || document).querySelectorAll('.ys-removequeue[data-id]')].map(q => q.dataset.id).join(',') + ' | ' + document.title.slice(0, 30));
    }
-   if (!stop) await setSearch('');
-   const q = [...document.querySelectorAll('*')].find(e => e.children.length === 0 && /^Queue/i.test(txt(e)))?.closest('section,div');
-   const qn = q ? [...q.querySelectorAll('[data-id]')].map(e => txt(e)).filter(Boolean) : [];
-   out.push('queue panel: ' + (qn.join(', ') || 'unreadable'));
    stop || out.join('\n')
    ```
 
    Total in-page waits stay well under 40 s (`javascript_tool` times out at 45 s).
-4. **Queue order.** Autodraft takes the queue top-down. If the `queue panel:` line lists a
-   player ahead of the targets who is no longer in the top 3, report `stale ahead: <name>`. Remove
-   it only if the Queue panel shows an obvious remove/unstar control for that row; otherwise just
-   report it. Do not spend a second tool call hunting for it.
-5. **Report** one line: `queue: <#1>, <#2>, <#3>` plus any `not found` / `no star control` /
-   `stale ahead` notes. `ON CLOCK - skipped` means run it again after the pick.
+4. **Queue order.** The `queue:` line lists ids top-down; it must match the TARGETS order. Because
+   the Queue is ordered by star time, a target that was already queued from an earlier tick stays
+   ahead of newer, higher-ranked targets. If the order is wrong, unstar and re-star the misplaced
+   player (`.ys-removequeue[data-id=ID] button`, then `.ys-addqueue[data-id=ID] button`).
+5. **Report** one line: `queue: <#1>, <#2>, <#3>` plus any `already drafted` / `not found` notes.
+   `ON CLOCK - skipped` means run it again after the pick. If the Autodraft pill in the Queue header
+   is filled (checkmark), the team is in autopick mode: click it once to turn autopick off and say
+   so.
 
-## Selectors are provisional
+## Verified DOM (mock #3, 2026-09-04)
 
-Verified live so far: rows carry `data-id` = Yahoo player id; the star is the row's first control
-before the user's turn; the search box is a React input; the Draft control in a search-result row
-is not a `<button>`. The star and queue-panel selectors above are best guesses. On the first mock
-run, start with a read-only probe and pin the real selectors into the script above:
-
-```js
-const r = document.querySelector('[data-id]')?.closest('tr,[role=row]');
-(r?.outerHTML || 'no row').slice(0, 900)
-```
-
-Then the same for a queued row and the Queue panel. If the star control cannot be found on two
-consecutive runs, stop and say so instead of clicking guesses.
+- Players table: `table tbody tr`; the star is `div.ys-addqueue[data-id=<yahoo id>] > button >
+  svg[data-icon="star-unfilled"]` and flips to `star-filled` once queued; the name cell is
+  `div.ys-player[data-id]`. A queued player's table row and its Queue-panel row both become
+  `div.ys-removequeue[data-id]` (click its button to unstar).
+- On your turn every `ys-addqueue` / `ys-removequeue` control disappears and rows show a
+  `Draft` button instead; the Queue panel rows show `Draft` too.
+- Search results (`input[placeholder*="earch"]`) include already-drafted players, marked with
+  `svg[data-icon="checkmark-circle-filled"]` and no star.
+- Queue header: "Autodraft will pick from queue" and an `Autodraft` pill; filled = autopick mode on.
+- Only the top ~100 by rank are in the table; DEF/K and late targets need the search box.
 
 ## Do not
 
 - Never click anything labelled Draft; never run while the title says YOUR TURN.
 - Never use `get_page_text` on the draft room (~10k tokens per call).
-- Do not remove queue entries you cannot positively identify.
+- Do not drag queue rows to reorder; unstar + re-star instead.

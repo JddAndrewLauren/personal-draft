@@ -65,7 +65,8 @@ the feed. Rehearsed against a live Yahoo mock on 2026-09-04; this recipe is what
    in chunks of ~20 (`MIN` = 1, 21, 41, ...) and drop `--append` for the first chunk so the old
    feed is replaced.
 4. **Report** one line: `tick: N picks total (M new), last: <player>`. If the status line says
-   3 or fewer picks away, run `/queue-draft` next (it stars the top recs in Yahoo's Queue).
+   3 or fewer picks away, run `/queue-draft` next (it stars the top recs in Yahoo's Queue). Recs
+   older than about 10 picks go stale, so re-run it after every tick until the pick is made.
 
 ## Stop conditions
 

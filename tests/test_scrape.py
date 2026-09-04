@@ -138,3 +138,13 @@ def test_second_mock_feed_resolves_everything_but_kickers():
     unresolved = [r for r, p in zip(feed["picks"], picks) if p.player_id.startswith("scrape:")]
     assert all(r["position"] == "K" for r in unresolved) and len(unresolved) == 12
     assert [p.player_name for p in picks if p.slot == 3][:3] == ["Jonathan Taylor", "Javonte Williams", "Josh Allen"]
+
+
+def test_third_mock_feed_resolves_everything_but_kickers():
+    """2026-09-04 mock #3 (slot 12, queue-loader rehearsal): 180 picks, only the 11 kickers unresolved."""
+    feed = sc.load_picks(ROOT / "test-data" / "mock-draft-2026-09-04c.json")
+    picks = sc.draft_picks_from_scrape(feed["picks"], players(), 12, sc.assign_slots_from_names(feed["picks"], 12))
+    assert len(picks) == 180
+    unresolved = [r for r, p in zip(feed["picks"], picks) if p.player_id.startswith("scrape:")]
+    assert all(r["position"] == "K" for r in unresolved) and len(unresolved) == 11
+    assert [p.player_name for p in picks if p.slot == 12][:3] == ["Kenneth Walker III", "Justin Jefferson", "Jadarian Price"]

@@ -445,3 +445,31 @@ def test_merge_config_nested():
     assert cfg["need_multipliers"]["starter_open"] == DEFAULT_CONFIG["need_multipliers"]["starter_open"]
     assert DEFAULT_CONFIG["need_multipliers"]["bench"] == 0.85    # defaults untouched
     assert cfg["need_multipliers"]["starter_empty"] == 1.5 and cfg["need_multipliers"]["bench_penalty"] == 5.0
+
+
+def test_mock_c_replay_fills_open_starters_before_bench(tmp_path):
+    """Mock #3 (2026-09-04c, slot 12) replay on the frozen players file: at 84 the open WR3 slot beats a
+    bench RB with higher raw value (bench penalty), at 108 an open starter (TE or DEF) tops the list, and
+    at 132 (round 11) DEF is the call. The live file put a bench RB first at 84 and 132 (gap > 5 pts)."""
+    import json
+    from pathlib import Path
+    import draft_cli
+    from models import load_config, load_players
+    root = Path(__file__).resolve().parents[1]
+    cfg = load_config(root / "config.yaml")
+    full = json.loads((root / "test-data" / "mock-draft-2026-09-04c.json").read_text())
+
+    def top_at(pick, n=1):
+        d = dict(full, picks=[r for r in full["picks"] if r["pick"] < pick])
+        feed = tmp_path / f"feed{pick}.json"
+        feed.write_text(json.dumps(d))
+        players = load_players(root / "test-data" / "players.csv")
+        state, _, _, _ = draft_cli.state_from_feed(feed, cfg, players, user_slot=12)
+        ocfg = merge_config(cfg["optimizer"])
+        prepare_players(players, state.settings, ocfg)
+        assert state.on_the_clock and state.current_pick == pick
+        return [r.player.position for r in recommend(state, players, ocfg)[:n]]
+
+    assert top_at(84) == ["WR"]
+    assert top_at(108)[0] in ("TE", "DEF")
+    assert top_at(132) == ["DEF"]

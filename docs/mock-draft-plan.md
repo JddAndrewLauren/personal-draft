@@ -40,6 +40,12 @@ the team ever enter autopick mode?
   script. Also invoke `/queue-draft` once while on the clock to confirm it answers
   `ON CLOCK - skipped` and drafts nothing.
 
+**Result (2026-09-04c, `docs/mock-draft-2026-09-04c.md`): Mock 3 and Mock 4 were run as one mock.**
+Roster-shape gates pass (first WR #1 at round 5, DEF by round 11, TE at round 9, every starter filled).
+Queue fallback works: an expiry with a loaded queue drafted the app's #1. Caveats: Yahoo re-arms
+autopick mode after *every* expiry once flagged (one click to clear); back-to-back picks need 4 queued
+targets and the two-turn script; recs older than ~10 picks go stale. The stop rule below is met.
+
 ## Mock 5 (optional): human in the loop
 
 Question: is the app readable enough for the user to act on in 45 s without the CLI?
@@ -67,10 +73,13 @@ Question: is the app readable enough for the user to act on in 45 s without the 
 ## Pick protocol (Claude drafting)
 
 - Tick every ~30 s normally; every ~10 s when picks-away <= 3.
-- With picks-away <= 3: tick, read #1/#2/#3, star them in the queue (only rows in the top-100
-  table; use the search box for late targets), then arm one script that waits for "YOUR TURN"
-  and clicks Draft with #1/#2/#3 fallbacks. In-page waits must stay under 40 s; re-arm if the
-  tool returns before the turn.
+- With picks-away <= 3: tick, then `/queue-draft` (3 targets, 4 when the next two picks are
+  back-to-back), then arm the two-turn Queue-panel script from `docs/mock-draft-2026-09-04c.md`
+  ("Loop, room and script findings"). On your turn the row star controls vanish; the Queue panel's
+  Draft button is the reliable control. In-page waits must stay under 40 s; re-arm if the tool
+  returns before the turn.
+- Tick as soon as the draft-client tab exists: mock rooms start before the lobby countdown ends.
+- If the "autopick mode" banner appears, click the Autodraft pill in the Queue header once (2 s).
 - Never run tick + script after the clock has started; that sequence lost pick 99.
 - If the room collapses to autodraft speed (< 5 s per pick), stop trying to pick and keep the
   queue loaded; log the stretch as invalid for timing.
