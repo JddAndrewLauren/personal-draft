@@ -5,48 +5,74 @@ description: One tick of the draft-room watcher. Reads the picks made so far off
 
 # /watch-draft — one tick
 
-The Streamlit app (`streamlit run app.py`, sidebar "Draft room (Claude in Chrome)" toggled on)
-polls `scrape/picks.json`. Your job each tick: read the draft room page, write the full list of
-picks made so far. The file is a snapshot, so rewriting the same content is harmless.
+The Streamlit app (`streamlit run app.py`, sidebar "Pick source > Draft room > Watch scrape feed"
+toggled on, "My team name" set to **Your Team**) polls `scrape/picks.json`. Your job each tick:
+read the new picks off the draft room's *Results > Round by Round* table and append them to
+the feed. Rehearsed against a live Yahoo mock on 2026-09-04; this recipe is what worked.
 
 ## Steps
 
 1. **Find the tab.** If the Chrome tools are not loaded, load them in ONE ToolSearch call:
-   `select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__get_page_text,mcp__claude-in-chrome__find,mcp__claude-in-chrome__computer`.
-   Call `tabs_context_mcp` and pick the tab whose URL is on `football.fantasysports.yahoo.com`
-   and whose title or URL contains `draft`. Remember its tab id across ticks. Never open a new tab
-   or navigate the draft tab: the user is drafting in it.
-2. **Read the picks.** Call `get_page_text` on that tab. Locate the draft results / "Picks" /
-   "Draft Results" section: a list of `pick number · team name · player name · position · NFL team`
-   entries (Yahoo shows them as e.g. `1. Team Gronk — Bijan Robinson (Atl - RB)`). If the results
-   panel is on a tab not currently visible, use `find` for "Draft Results" or "Picks" and click it
-   once with `computer`, then read again. Do not scroll or click anything else.
-3. **Compare to last tick.** Keep the pick count from the previous tick in your head. If it has
-   not changed, write nothing and end the tick with a one-line status.
-4. **Write the feed.** Emit one line per pick and pipe it to the writer (repo root as cwd):
+   `select:mcp__claude-in-chrome__tabs_context_mcp,mcp__claude-in-chrome__javascript_tool,mcp__claude-in-chrome__computer`.
+   Call `tabs_context_mcp` and pick the tab whose URL is on
+   `football.fantasysports.yahoo.com/draftclient/`. Remember its tab id across ticks. Never open a
+   new tab or navigate the draft tab: the user is drafting in it.
+2. **Read the new picks** with `javascript_tool` (one call; output is capped near 1000 chars, so
+   only ask for picks after the last one you wrote — set `MIN`):
+
+   ```js
+   const MIN = <last pick written + 1>;
+   let t = document.querySelector('table');
+   if (!t || !/^Pick/.test(t.rows[0]?.innerText || '')) {           // Results > Round by Round not showing
+     [...document.querySelectorAll('button')].find(e => e.textContent.trim() === 'Results')?.click();
+     await new Promise(s => setTimeout(s, 800));
+     [...document.querySelectorAll('div,span,button')].find(e => e.children.length === 0 && e.textContent.trim() === 'Round by Round')?.click();
+     await new Promise(s => setTimeout(s, 800));
+     t = document.querySelector('table');
+   }
+   const out = [];
+   for (const r of t.rows) {
+     if (r.cells.length < 3) continue;
+     const pick = +r.cells[0].innerText.trim(); if (!pick || pick < MIN) continue;
+     const pl = r.cells[1], id = pl.querySelector('[data-id]')?.dataset.id || '';
+     const lines = pl.innerText.split('\n').map(s => s.trim())
+       .filter(s => s && !/^(Q|O|IR|D|SUSP|NA|PUP)$/.test(s) && !/^Bye/.test(s));
+     out.push([pick, r.cells[2].innerText.trim(), lines[0] || '', lines[1] || '', lines[2] || '', id].join(' | '));
+   }
+   out.reverse().join('\n')
+   ```
+
+   Each line is `pick | fantasy team | abbreviated name | pos | NFL team | yahoo player id`.
+   The user's own team is listed as **Your Team**; names are abbreviated ("J. Gibbs") but the
+   Yahoo id resolves the player exactly against `data/players.csv`. Kickers and unknown ids fall
+   back to a placeholder pick; that is fine.
+   The table is newest-first; the snippet reverses it. If `out` is empty, nothing new happened.
+3. **Append to the feed** (repo root as cwd), pasting the lines verbatim:
 
    ```bash
-   .venv/bin/python write_picks.py <<'PICKS'
-   1 | Team Gronk | Bijan Robinson | RB | ATL
-   2 | Dad Bods | Ja'Marr Chase | WR | CIN
+   .venv/bin/python write_picks.py --append <<'PICKS'
+   40 | tyler | B. Irving | RB | TB | 40993
+   41 | Gregory | T. McMillan | WR | Car | 41793
    PICKS
    ```
 
-   Fields: `pick | fantasy team name | player | position | NFL team`. Team name exactly as the
-   page shows it (the app maps team names to draft slots from round 1 and uses "My team name"
-   from the sidebar to find the user's slot). Position as `QB/RB/WR/TE/K/DEF`; Yahoo's `D/ST` or
-   `DEF` both map to DEF. Include every pick made so far, not just the new ones.
-5. **Report** one line: `tick: N picks (M new), last: <player>`.
+   On the very first tick (or if the feed might be stale from an earlier draft) send *all* picks
+   in chunks of ~20 (`MIN` = 1, 21, 41, ...) and drop `--append` for the first chunk so the old
+   feed is replaced.
+4. **Report** one line: `tick: N picks total (M new), last: <player>`.
 
 ## Stop conditions
 
 End the loop (reply with the stop instruction for /loop) when:
-- the page says the draft is complete / all rounds are filled, or
+- the pick count reaches teams × rounds (180 for the league) or the page says the draft is complete, or
 - the draft tab is gone, or
-- three consecutive ticks find no draft-results section (say so; the user may have navigated away).
+- three consecutive ticks find no `Pick` table even after clicking Results (say so; the user may
+  have navigated away).
 
 ## Do not
 
-- Do not pick players, click "Draft", or interact with the queue. Read only.
+- Do not pick players, click "Draft", or touch the queue. Read only (clicking the Results /
+  Round by Round tabs is the one allowed interaction).
+- Do not use `get_page_text` on the draft room: it is ~10k tokens per call and abbreviates names.
 - Do not guess a pick you cannot read; leave it out and mention it in the tick report.
 - Do not edit `scrape/picks.json` by hand; always go through `write_picks.py`.

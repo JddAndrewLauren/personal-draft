@@ -6,7 +6,8 @@ Feed file (``scrape/picks.json``), rewritten as a full snapshot each tick::
      "picks": [{"pick": 1, "team": "Team Gronk", "player": "Bijan Robinson",
                 "position": "RB", "nfl_team": "ATL"}]}
 
-Only ``pick``, ``player`` and ``position`` are required. ``team`` (the fantasy team name) drives
+Only ``pick``, ``player`` and ``position`` are required. ``yahoo_id`` (the draft room's
+``data-id``) resolves the player exactly, so abbreviated names like "J. Gibbs" still match. ``team`` (the fantasy team name) drives
 slot inference from round 1; ``nfl_team`` disambiguates players with the same name/position.
 """
 from __future__ import annotations
@@ -36,6 +37,7 @@ def load_picks(path) -> dict:
             "player": str(r["player"]).strip(),
             "position": (r.get("position") or "").strip(),
             "nfl_team": (r.get("nfl_team") or "").strip(),
+            "yahoo_id": str(r.get("yahoo_id") or "").strip(),
         })
     rows.sort(key=lambda r: r["pick"])
     return {"updated": float(d.get("updated") or 0.0), "picks": rows}
@@ -61,9 +63,10 @@ def draft_picks_from_scrape(rows: list, players: list, num_teams: int, slots: Op
     Unresolved names get the placeholder id ``scrape:<name>`` so the pick is still recorded.
     """
     slots = slots or {}
+    by_yid = {p.yahoo_player_id: p for p in players if p.yahoo_player_id}
     out = []
     for r in rows:
-        pl = resolve_player(players, r["player"], r["position"], r["nfl_team"] or None)
+        pl = by_yid.get(r.get("yahoo_id") or "") or resolve_player(players, r["player"], r["position"], r["nfl_team"] or None)
         slot = slots.get(r["team"]) or snake_slot_for_pick(r["pick"], num_teams)
         out.append(DraftPick(
             pick=r["pick"], round=(r["pick"] - 1) // num_teams + 1, slot=slot,

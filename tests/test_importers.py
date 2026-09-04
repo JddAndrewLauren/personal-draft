@@ -144,3 +144,16 @@ def test_mappings_round_trip(tmp_path):
     p = Player(player_id="dj moore|WR", name="DJ Moore", team="CHI", position="WR", projected_points=1)
     apply_mappings([p], m)
     assert p.yahoo_player_id == "31234"
+
+
+def test_resolve_defense_spellings():
+    from models import Player, resolve_player
+    players = [Player("texans|DEF", "Texans", "HOU", "DEF", 100.0),
+               Player("broncos|DEF", "Broncos", "DEN", "DEF", 90.0),
+               Player("nico collins|WR", "Nico Collins", "HOU", "WR", 200.0)]
+    for spelling, team in [("Texans", None), ("Houston Texans", None), ("Texans D/ST", None),
+                           ("HOU DST", None), ("Houston", "HOU"), ("Texans Defense", "hou")]:
+        assert resolve_player(players, spelling, "DST", team).name == "Texans", spelling
+    assert resolve_player(players, "Broncos D/ST", "DEF").name == "Broncos"
+    assert resolve_player(players, "Ravens D/ST", "DEF") is None
+    assert resolve_player(players, "Nico Collins", "WR").team == "HOU"

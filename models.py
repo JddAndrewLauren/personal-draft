@@ -86,8 +86,32 @@ def make_player_id(name: str, position: str) -> str:
     return f"{normalize_name(name)}|{normalize_position(position)}"
 
 
+DEF_NOISE_WORDS = {"d", "st", "dst", "def", "defense", "special", "teams"}
+
+
+def resolve_defense(players, name: str, team: Optional[str] = None):
+    """Match a team defense however the source spells it: "Texans", "Houston Texans",
+    "Texans D/ST", "HOU DST" -> the DEF row whose team abbrev or nickname agrees."""
+    defs = [p for p in players if p.position == "DEF"]
+    words = [w for w in normalize_name(name).split() if w not in DEF_NOISE_WORDS]
+    t = normalize_team(team) if team else ""
+    if not t and len(words) == 1 and len(words[0]) <= 3:
+        t = normalize_team(words[0])
+    if t:
+        for p in defs:
+            if normalize_team(p.team) == t:
+                return p
+    for p in defs:
+        nick = normalize_name(p.name).split()
+        if nick and words and nick[-1] == words[-1]:
+            return p
+    return None
+
+
 def resolve_player(players, name: str, position: str, team: Optional[str] = None):
     """Find a Player by name + position (and NFL team when ids are disambiguated), else None."""
+    if normalize_position(position) == "DEF":
+        return resolve_defense(players, name, team)
     pid = make_player_id(name, position)
     by_id = {p.player_id: p for p in players}
     if pid in by_id:

@@ -862,15 +862,24 @@ def readiness_page():
     have_yahoo_players = bool(ss().yahoo_players)
     matched = len(ss().mapping) if have_yahoo_players else 0
     with_adp = sum(1 for p in players if p.adp is not None)
+    draft_size = state.settings.num_teams * state.settings.rounds
+    adp_in_draft = sum(1 for p in players if p.adp is not None and p.adp <= draft_size)
     with_ext = sum(1 for p in players if p.external_vbd is not None or p.rank_stddev is not None)
+    with_yid = sum(1 for p in players if p.yahoo_player_id)
+    scrape = live_source() == "scrape" or not authed
+    league_src = "Yahoo" if state.settings.league_key else "config.yaml"
     checks = [
-        ("Yahoo authentication", authed, "Authorize in the sidebar (needs .env credentials)"),
-        ("League settings", bool(state.settings.league_key), "Load league in the sidebar; config.yaml defaults in use"),
-        ("Teams", bool(state.settings.league_key) and bool(state.teams), f"{len(state.teams)} teams"),
+        ("Pick source", authed or scrape,
+         "Draft room scrape (Yahoo API not needed)" if scrape else "Yahoo API"),
+        ("League settings", bool(state.settings.league_key) or state.settings.name != "Local league",
+         f"{state.settings.name} · {league_src}"),
+        ("Teams", len(state.teams) == state.settings.num_teams, f"{len(state.teams)} teams"),
         ("User team", any(t.is_user for t in state.teams), f"slot {state.user_slot}"),
         ("Player projections", bool(players), f"{len(players)} players loaded"),
-        ("Yahoo player mapping", have_yahoo_players and not ss().unmatched, f"{matched} matched, {len(ss().unmatched)} unmatched"),
-        ("ADP", with_adp >= max(50, len(players) // 2), f"{with_adp} of {len(players)} players have ADP"),
+        ("Yahoo player mapping", (have_yahoo_players and not ss().unmatched) or with_yid >= len(players) * 0.9,
+         f"{matched} matched, {len(ss().unmatched)} unmatched" if have_yahoo_players else f"{with_yid} of {len(players)} carry a Yahoo id"),
+        ("ADP", adp_in_draft >= draft_size * 0.9,
+         f"{with_adp} of {len(players)} players have ADP; {adp_in_draft} inside the {draft_size}-pick draft"),
         ("External VBD / risk data", with_ext > 0, f"{with_ext} players carry external data (optional)"),
         ("Draft state persistence", Path(ss().paths["draft_state"]).exists() or not state.picks, ss().paths["draft_state"]),
     ]

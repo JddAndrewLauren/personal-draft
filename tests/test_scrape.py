@@ -83,3 +83,37 @@ def test_settings_from_config_reads_league_scoring_and_no_kicker():
     assert "K" not in s.roster.starter_positions
     assert s.roster.flex_positions == ("RB", "WR")
     assert s.rounds == 15 and s.roster.total_slots == 15
+
+
+def test_yahoo_id_resolves_abbreviated_names_and_tolerates_kickers(tmp_path):
+    """The draft room abbreviates names ("J. Gibbs") but exposes Yahoo's player id; a K pick
+    by another team (no K rows in players.csv) must land as a placeholder, not crash."""
+    rows = parse_lines("1 | Your Team | J. Gibbs | RB | Det | 40059\n"
+                       "2 | Ahil | B. Aubrey | K | Dal | 34321\n"
+                       "3 | Miguel | Texans D/ST | DEF | Hou |\n")
+    assert rows[0]["yahoo_id"] == "40059" and rows[2]["yahoo_id"] == ""
+    path = tmp_path / "picks.json"
+    sc.write_picks(rows, path)
+    feed = sc.load_picks(path)
+    picks = sc.draft_picks_from_scrape(feed["picks"], players(), 12, sc.assign_slots_from_names(feed["picks"], 12))
+    assert picks[0].player_id == "jahmyr gibbs|RB"
+    assert picks[1].player_id == "scrape:B. Aubrey" and picks[1].slot == 2
+    assert picks[2].player_id == "texans|DEF"
+    state = make_state(user_slot=1)
+    new, conflicts = state.merge_yahoo(picks, source="scrape")
+    assert len(new) == 3 and not conflicts
+
+
+def test_write_picks_append_merges_by_pick(tmp_path):
+    from write_picks import main
+    import io, sys
+    path = tmp_path / "picks.json"
+    sc.write_picks(parse_lines("1 | A | Jahmyr Gibbs | RB | DET\n2 | B | Bijan Robinson | RB | ATL"), path)
+    sys.stdin = io.StringIO("2 | B | Bijan Robinson | RB | ATL | 40055\n3 | C | Puka Nacua | WR | LAR | 40168")
+    try:
+        main(["--path", str(path), "--append"])
+    finally:
+        sys.stdin = sys.__stdin__
+    feed = sc.load_picks(path)
+    assert [r["pick"] for r in feed["picks"]] == [1, 2, 3]
+    assert feed["picks"][1]["yahoo_id"] == "40055"
