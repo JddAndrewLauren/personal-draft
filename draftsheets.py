@@ -24,7 +24,7 @@ import re
 import sys
 from pathlib import Path
 
-from models import load_config, normalize_name, normalize_team, settings_from_config
+from models import enrich_key, enrich_players_csv, load_config, normalize_team, settings_from_config
 
 POSITIONS = ("QB", "RB", "WR", "TE")
 # Aggregate table sizes per position (rows the workbook actually ranks) and the smaller range its
@@ -323,47 +323,15 @@ def write_sheet_csv(rows: list, path, note: str) -> None:
 
 
 def merge_into_players(rows: list, players_csv) -> dict:
-    """Add VBD / ExternalTier / RankAvg / DraftSheetPts columns to data/players.csv, matching on
-    normalised name + position (team as tiebreak).  Other columns and the comment line are kept."""
-    path = Path(players_csv)
-    lines = path.read_text().splitlines()
-    comments = [ln for ln in lines if ln.startswith("#")]
-    body = [ln for ln in lines if not ln.startswith("#")]
-    reader = csv.DictReader(body)
-    fields = list(reader.fieldnames or [])
-    for col in ("VBD", "ExternalTier", "RankAvg", "DraftSheetPts"):
-        if col not in fields:
-            fields.append(col)
-    by_key = {}
+    """Add VBD / ExternalTier / RankAvg / DraftSheetPts columns to data/players.csv."""
+    updates = {}
     for r in rows:
-        by_key.setdefault((normalize_name(r["name"]), r["pos"]), []).append(r)
-    matched, used = 0, set()
-    out_rows = []
-    for m in reader:
-        cands = by_key.get((normalize_name(m["Player"]), m["Position"]), [])
-        if len(cands) > 1:
-            same = [c for c in cands if normalize_team(c["team"]) == normalize_team(m["Team"])]
-            cands = same or cands
-        if cands:
-            r = cands[0]
-            used.add(id(r))
-            matched += 1
-            m["VBD"] = round(r["vbd"], 2)
-            m["ExternalTier"] = r["sheet_tier"]
-            m["RankAvg"] = r["rank"]
-            m["DraftSheetPts"] = round(r["zscore"], 2)
-        else:
-            for col in ("VBD", "ExternalTier", "RankAvg", "DraftSheetPts"):
-                m.setdefault(col, "")
-        out_rows.append(m)
-    unmatched = [r for r in rows if id(r) not in used]
-    with path.open("w", newline="") as f:
-        for c in comments:
-            f.write(c + "\n")
-        w = csv.DictWriter(f, fieldnames=fields)
-        w.writeheader()
-        w.writerows(out_rows)
-    return {"matched": matched, "unmatched": unmatched}
+        updates[enrich_key(r["name"], r["pos"], r["team"])] = {
+            "VBD": round(r["vbd"], 2), "ExternalTier": r["sheet_tier"], "RankAvg": r["rank"],
+            "DraftSheetPts": round(r["zscore"], 2), "_team": r["team"], "_row": r,
+        }
+    res = enrich_players_csv(players_csv, updates, ["VBD", "ExternalTier", "RankAvg", "DraftSheetPts"])
+    return {"matched": res["matched"], "unmatched": [updates[k]["_row"] for k in res["unmatched_keys"]]}
 
 
 def main(argv=None) -> int:

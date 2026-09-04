@@ -907,6 +907,57 @@ def write_players_csv(players: Iterable[Player], path) -> None:
                         p.rank_avg, p.rank_best, p.rank_worst, p.rank_stddev, p.external_tier])
 
 
+def enrich_key(name: str, position: str, team: str = "") -> tuple:
+    """Match key for enriching the master CSV: name+position, except defenses, which sources name
+    differently ("Texans" vs "Houston Texans") and so match on team."""
+    pos = normalize_position(position)
+    if pos == "DEF":
+        return ("DEF", normalize_team(team))
+    return (pos, normalize_name(name))
+
+
+def enrich_players_csv(path, updates: dict, columns: list) -> dict:
+    """Add/overwrite ``columns`` in the master players CSV from ``updates``: {enrich_key: {col: val}}.
+    Existing columns and leading ``#`` comment lines are preserved; an update whose key has several
+    master rows (same name+position, different teams) may carry a ``_team`` to break the tie.
+    Returns {"matched": n, "unmatched_keys": [...]}."""
+    path = Path(path)
+    lines = path.read_text().splitlines()
+    comments = [ln for ln in lines if ln.startswith("#")]
+    reader = csv.DictReader([ln for ln in lines if not ln.startswith("#")])
+    fields = list(reader.fieldnames or [])
+    for col in columns:
+        if col not in fields:
+            fields.append(col)
+    rows = list(reader)
+    by_key: dict = {}
+    for r in rows:
+        by_key.setdefault(enrich_key(r["Player"], r["Position"], r.get("Team", "")), []).append(r)
+    matched, used = 0, set()
+    for key, upd in updates.items():
+        cands = by_key.get(key, [])
+        if len(cands) > 1 and upd.get("_team"):
+            same = [c for c in cands if normalize_team(c.get("Team")) == normalize_team(upd["_team"])]
+            cands = same or cands
+        if not cands:
+            continue
+        matched += 1
+        used.add(key)
+        for col in columns:
+            if col in upd:
+                cands[0][col] = upd[col]
+    for r in rows:
+        for col in columns:
+            r.setdefault(col, "")
+    with path.open("w", newline="") as f:
+        for c in comments:
+            f.write(c + "\n")
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        w.writerows(rows)
+    return {"matched": matched, "unmatched_keys": [k for k in updates if k not in used]}
+
+
 # --------------------------------------------------------------------------- #
 # Player mappings (local player_id <-> yahoo_player_id), spec §13
 # --------------------------------------------------------------------------- #

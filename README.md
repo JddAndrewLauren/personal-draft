@@ -75,6 +75,11 @@ Supported out of the box:
   writes `data/draftsheets_2026.csv`, and adds `VBD`, `ExternalTier`, `RankAvg` (ECR overall rank)
   and `DraftSheetPts` to `data/players.csv`. `--validate` checks the replication against the
   workbook's own cached numbers first (0 mismatches on the 2026-09-04 sheet).
+- **FantasyPros consensus ECR (standard scoring)**: `data/fantasypros_ecr_std.csv` is the site's
+  overall cheatsheet in export format (grabbed from `window.ecrData` on the rankings page via
+  Claude in Chrome). `python fantasypros_ecr.py` merges `RankAvg`, `RankBest`, `RankWorst`,
+  `RankStdDev` (expert disagreement, which drives the risk labels) and `FPTier` into
+  `data/players.csv`; defenses match by team.
 
 Rows are matched by normalised name + position (team breaks ties). No fuzzy matching, so
 check the Readiness page for unmatched rows and fix names in the CSV.
