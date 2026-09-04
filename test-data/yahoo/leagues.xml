@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xml:lang="en-US" yahoo:uri="http://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys=nfl/leagues" xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+  <users count="1">
+    <user>
+      <guid>ABCDEF</guid>
+      <games count="1">
+        <game>
+          <game_key>461</game_key><game_id>461</game_id><name>Football</name><code>nfl</code><season>2026</season>
+          <leagues count="2">
+            <league>
+              <league_key>461.l.12345</league_key><league_id>12345</league_id><name>Twinion Invitational</name>
+              <num_teams>12</num_teams><draft_status>predraft</draft_status><season>2026</season><draft_time>1757203200</draft_time>
+            </league>
+            <league>
+              <league_key>461.l.99999</league_key><league_id>99999</league_id><name>Work League</name>
+              <num_teams>10</num_teams><draft_status>postdraft</draft_status><season>2026</season>
+            </league>
+          </leagues>
+        </game>
+      </games>
+    </user>
+  </users>
+</fantasy_content>

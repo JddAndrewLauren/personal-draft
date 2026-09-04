@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xml:lang="en-US" yahoo:uri="http://fantasysports.yahooapis.com/fantasy/v2/league/461.l.12345/teams" xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+  <league>
+    <league_key>461.l.12345</league_key>
+    <num_teams>4</num_teams>
+    <teams count="4">
+      <team>
+        <team_key>461.l.12345.t.1</team_key><team_id>1</team_id><name>Gridiron Gang</name>
+        <is_owned_by_current_login>0</is_owned_by_current_login>
+        <managers><manager><manager_id>1</manager_id><nickname>Pat</nickname></manager></managers>
+      </team>
+      <team>
+        <team_key>461.l.12345.t.2</team_key><team_id>2</team_id><name>Twinion FC</name>
+        <is_owned_by_current_login>1</is_owned_by_current_login>
+        <managers><manager><manager_id>2</manager_id><nickname>John</nickname><is_current_login>1</is_current_login></manager></managers>
+      </team>
+      <team>
+        <team_key>461.l.12345.t.3</team_key><team_id>3</team_id><name>Bench Warmers</name>
+        <managers><manager><manager_id>3</manager_id><nickname>Sam</nickname></manager></managers>
+      </team>
+      <team>
+        <team_key>461.l.12345.t.4</team_key><team_id>4</team_id><name>Waiver Wire Heroes</name>
+        <managers><manager><manager_id>4</manager_id><nickname>Alex</nickname></manager></managers>
+      </team>
+    </teams>
+  </league>
+</fantasy_content>

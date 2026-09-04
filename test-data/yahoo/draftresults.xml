@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fantasy_content xml:lang="en-US" yahoo:uri="http://fantasysports.yahooapis.com/fantasy/v2/league/461.l.12345/draftresults" xmlns:yahoo="http://www.yahooapis.com/v1/base.rng" xmlns="http://fantasysports.yahooapis.com/fantasy/v2/base.rng">
+  <league>
+    <league_key>461.l.12345</league_key>
+    <draft_status>draftinginprogress</draft_status>
+    <num_teams>4</num_teams>
+    <draft_results count="6">
+      <draft_result><pick>1</pick><round>1</round><team_key>461.l.12345.t.3</team_key><player_key>461.p.40001</player_key></draft_result>
+      <draft_result><pick>2</pick><round>1</round><team_key>461.l.12345.t.1</team_key><player_key>461.p.40002</player_key></draft_result>
+      <draft_result><pick>3</pick><round>1</round><team_key>461.l.12345.t.4</team_key><player_key>461.p.40003</player_key></draft_result>
+      <draft_result><pick>4</pick><round>1</round><team_key>461.l.12345.t.2</team_key><player_key>461.p.40004</player_key></draft_result>
+      <draft_result><pick>5</pick><round>2</round><team_key>461.l.12345.t.2</team_key><player_key>461.p.40005</player_key></draft_result>
+      <draft_result><pick>6</pick><round>2</round><team_key>461.l.12345.t.4</team_key><player_key>461.p.49999</player_key></draft_result>
+      <draft_result><pick>7</pick><round>2</round><team_key>461.l.12345.t.1</team_key></draft_result>
+    </draft_results>
+  </league>
+</fantasy_content>
