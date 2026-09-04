@@ -1,0 +1,73 @@
+# Local configuration. Yahoo-derived settings (teams, roster, scoring) override these once connected.
+
+league:
+  teams: 12
+  name: "Local league"
+  # Yahoo default roster (15 slots = 15 rounds). Keys are Yahoo position names; FLEX is shared
+  # by flex_positions. If slots and draft.rounds disagree, the bench is resized to match rounds.
+  roster:
+    QB: 1
+    RB: 2
+    WR: 3
+    TE: 1
+    FLEX: 1
+    K: 1
+    DEF: 1
+    BN: 5
+  flex_positions: [RB, WR, TE]
+  # Hard caps: recommendations at a position stop once you hold this many.
+  max_per_position:
+    QB: 2
+    TE: 2
+    K: 1
+    DEF: 1
+
+draft:
+  user_slot: 7
+  rounds: 15
+
+optimizer:
+  wait_cost_weight: 1.0          # λ: how much positional urgency counts
+  adp_stddev: 6.0                # σ of draft position at ADP 0 (picks)
+  adp_stddev_per_pick: 0.08      # σ grows with ADP: σ = adp_stddev + per_pick × ADP
+  external_vbd_weight: 0.5       # value = (1-w)·league VOR + w·external VBD (0 = ignore external)
+  flex_weights: {RB: 0.5, WR: 0.5, TE: 0.0}   # how FLEX starters split across positions
+  tier_gap_points: {QB: 12, RB: 10, WR: 10, TE: 10, K: 6, DEF: 6, default: 10}
+  tier_width_points: {QB: 25, RB: 22, WR: 22, TE: 20, K: 10, DEF: 10, default: 20}
+  position_value_scale: {K: 0.5, DEF: 0.5}   # projection-reliability discount on VOR
+  need_multipliers:
+    starter_open: 1.10
+    flex_open: 1.00
+    bench: 0.85
+    bench_deep: 0.70
+    bench_deep_after: 2
+  confidence_thresholds: {strong: 8.0, moderate: 3.0}
+  risk_thresholds: {safe: -0.5, boom_bust: 0.5}
+  top_n: 5
+
+polling:
+  interval_seconds: 5
+
+# Optional column mapping for a generic (non-FantasyPros) external CSV.
+# import:
+#   column_map:
+#     name: "Player"
+#     position: "Pos"
+#     team: "Tm"
+#     points: "Pts"
+#     vbd: "VBD"
+#     adp: "ADP"
+#     rank_avg: "AvgRank"
+#     rank_best: "Best"
+#     rank_worst: "Worst"
+#     rank_stddev: "StdDev"
+#     tier: "Tier"
+
+paths:
+  players_csv: data/players.csv
+  mappings_csv: data/player_mappings.csv
+  yahoo_players_csv: data/yahoo_players.csv
+  draft_state: draft_state.json
+  snapshots_dir: snapshots
+  log_file: fantasy-draft.log
+  token_file: .yahoo_token.json

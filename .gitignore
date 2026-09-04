@@ -1,0 +1,22 @@
+# secrets / tokens
+.env
+.yahoo_token.json
+
+# runtime state
+draft_state.json
+draft_state.json.tmp
+snapshots/
+fantasy-draft.log
+data/yahoo_players.csv
+
+# python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/
