@@ -13,7 +13,8 @@ mock #3 (2026-09-04, `docs/mock-draft-2026-09-04c.md`).
 ## Steps
 
 1. **Get the targets** (repo root as cwd). Ask for 6 when the user's next two picks are
-   back-to-back (turn slots 1 and 12), else 5. The ranking is merit-only (no reach-my-pick
+   within 3 picks of each other (turn slots 1, 2, 11, 12: the second pick's queue must survive the
+   first pick plus the picks between), else 5. The ranking is merit-only (no reach-my-pick
    discount, commit 6d311fe), so the top targets are often taken before the pick; Yahoo drafts
    the queue top-down skipping taken players, so depth is what keeps the queue from running
    empty (mock #3 pick 108: all four targets gone, then a Yahoo autopick).

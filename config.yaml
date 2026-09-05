@@ -38,7 +38,7 @@ league:
     "18": -2      # fumble lost
 
 draft:
-  user_slot: 7
+  user_slot: 11
   rounds: 15
 
 optimizer:
