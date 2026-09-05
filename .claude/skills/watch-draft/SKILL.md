@@ -48,6 +48,21 @@ the feed. Rehearsed against a live Yahoo mock on 2026-09-04; this recipe is what
    Yahoo id resolves the player exactly against `data/players.csv`. Kickers and unknown ids fall
    back to a placeholder pick; that is fine.
    The table is newest-first; the snippet reverses it. If `out` is empty, nothing new happened.
+
+   **Tight loop (live draft 2026-09-05, recommended over `/loop`).** Cron fires at most once a
+   minute and only when idle; with half the room autodrafting, picks land seconds apart. Instead,
+   factor the row read into `read()` and poll inside one call:
+
+   ```js
+   const t0 = Date.now(); let out = await read();
+   while (out.length < 4 && Date.now() - t0 < 30000) { await new Promise(s => setTimeout(s, 2500)); out = await read(); }
+   ```
+
+   (`< 4` when your pick is far away, `< 1` when you are on the clock.) Then in the *same turn*
+   issue the Bash append of the previous read and the next JS read as parallel calls, and repeat.
+   Keep reads and appends independent so one failing (Bash blocked, extension hiccup) does not stall
+   the other. Room titles: "N picks until your turn", **"You are next"** (1 away), "YOUR TURN, DRAFT
+   NOW", and the bare "Live NFL Draft" once the draft is complete.
 3. **Append to the feed** (repo root as cwd), pasting the lines verbatim. `draft_cli.py tick`
    appends and then prints the draft status (pick, picks away, your roster) and the
    optimizer's top recommendations, so one call covers the feed and the read-out:
@@ -64,9 +79,10 @@ the feed. Rehearsed against a live Yahoo mock on 2026-09-04; this recipe is what
    On the very first tick (or if the feed might be stale from an earlier draft) send *all* picks
    in chunks of ~20 (`MIN` = 1, 21, 41, ...) and drop `--append` for the first chunk so the old
    feed is replaced.
-4. **Report** one line: `tick: N picks total (M new), last: <player>`. If the status line says
-   3 or fewer picks away, run `/queue-draft` next (it stars the top recs in Yahoo's Queue). Recs
-   older than about 10 picks go stale, so re-run it after every tick until the pick is made.
+4. **Report** one line: `tick: N picks total (M new), last: <player>`. Run `/queue-draft` after
+   **every** tick (the user wants the Queue full at all times, 8 deep, in rank order), and never
+   later than the tick before the pick ahead of yours: the room locks the stars once you are on the
+   clock, so a rebuild attempted then is skipped and the stale queue stands (pick 155, 2026-09-05).
 
 ## Stop conditions
 

@@ -12,15 +12,18 @@ mock #3 (2026-09-04, `docs/mock-draft-2026-09-04c.md`).
 
 ## Steps
 
-1. **Get the targets** (repo root as cwd). Ask for 6 when the user's next two picks are
-   within 3 picks of each other (turn slots 1, 2, 11, 12: the second pick's queue must survive the
-   first pick plus the picks between), else 5. The ranking is merit-only (no reach-my-pick
+1. **Get the targets** (repo root as cwd). Ask for **8** and refill after every `/watch-draft` tick
+   (live draft 2026-09-05: the user wants the Queue full at all times; with half the room
+   autodrafting 2-4 targets vanish between ticks). Before the draft starts, load the top 14: on a
+   back-half slot everything above your pick is gone by the time it arrives. In the last 3-4 rounds,
+   when the ranking is mostly bench TEs, filter to upside RB/WR and rookies instead:
+   `.venv/bin/python draft_cli.py recs --n 30 --ids | grep -E '\|(RB|WR)$' | head -8`. The ranking is merit-only (no reach-my-pick
    discount, commit 6d311fe), so the top targets are often taken before the pick; Yahoo drafts
    the queue top-down skipping taken players, so depth is what keeps the queue from running
    empty (mock #3 pick 108: all four targets gone, then a Yahoo autopick).
 
    ```bash
-   .venv/bin/python draft_cli.py recs --n 5 --ids
+   .venv/bin/python draft_cli.py recs --n 8 --ids
    ```
 
    One line per rec: `yahoo_id|name|pos`. The id can be blank (some DEFs); the script then finds
@@ -85,8 +88,12 @@ mock #3 (2026-09-04, `docs/mock-draft-2026-09-04c.md`).
    Total in-page waits stay well under 40 s (`javascript_tool` times out at 45 s).
 4. **Queue order.** The `queue:` line lists ids top-down; it must match the TARGETS order. Because
    the Queue is ordered by star time, a target that was already queued from an earlier tick stays
-   ahead of newer, higher-ranked targets. If the order is wrong, unstar and re-star the misplaced
-   player (`.ys-removequeue[data-id=ID] button`, then `.ys-addqueue[data-id=ID] button`).
+   ahead of newer, higher-ranked targets. The refill used on 2026-09-05 checks
+   `cur.join() !== want.filter(id => cur.includes(id)).join()` and, when it differs, unstars the whole
+   queue and re-stars every target in rank order (about 250 ms per click, well inside the 45 s cap);
+   otherwise it only appends the missing ones. It also fuses the `/watch-draft` row read into the
+   same call so refill and read cost one round trip. The `queue:` readback can lag the DOM by a few
+   hundred ms and miss the last entries; screenshot if it matters.
 5. **Report** one line: `queue: <#1>, <#2>, ... <#5>` plus any `already drafted` / `not found` notes.
    `ON CLOCK - skipped` means run it again after the pick. If the Autodraft pill in the Queue header
    is filled (checkmark), the team is in autopick mode: click it once to turn autopick off and say

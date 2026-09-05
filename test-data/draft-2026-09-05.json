@@ -1,0 +1,1445 @@
+{
+ "updated": 1788635446.78179,
+ "picks": [
+  {
+   "pick": 1,
+   "team": "Unsolicited Dak Pics",
+   "player": "J. Gibbs",
+   "position": "RB",
+   "nfl_team": "Det",
+   "yahoo_id": "40059"
+  },
+  {
+   "pick": 2,
+   "team": "Mary Sold Seperately",
+   "player": "B. Robinson",
+   "position": "RB",
+   "nfl_team": "Atl",
+   "yahoo_id": "40055"
+  },
+  {
+   "pick": 3,
+   "team": "Burrowing Owls",
+   "player": "P. Nacua",
+   "position": "WR",
+   "nfl_team": "LAR",
+   "yahoo_id": "40168"
+  },
+  {
+   "pick": 4,
+   "team": "SanDiego Lost",
+   "player": "J. Chase",
+   "position": "WR",
+   "nfl_team": "Cin",
+   "yahoo_id": "33393"
+  },
+  {
+   "pick": 5,
+   "team": "Paul's Hot Sister",
+   "player": "J. Taylor",
+   "position": "RB",
+   "nfl_team": "Ind",
+   "yahoo_id": "32711"
+  },
+  {
+   "pick": 6,
+   "team": "The Mustache Magnum",
+   "player": "C. McCaffrey",
+   "position": "RB",
+   "nfl_team": "SF",
+   "yahoo_id": "30121"
+  },
+  {
+   "pick": 7,
+   "team": "Zulma's Optimal Team",
+   "player": "J. Cook III",
+   "position": "RB",
+   "nfl_team": "Buf",
+   "yahoo_id": "34019"
+  },
+  {
+   "pick": 8,
+   "team": "The Pots and Pans",
+   "player": "K. Walker III",
+   "position": "RB",
+   "nfl_team": "KC",
+   "yahoo_id": "33996"
+  },
+  {
+   "pick": 9,
+   "team": "SryAboutTheChargers",
+   "player": "A. St. Brown",
+   "position": "WR",
+   "nfl_team": "Det",
+   "yahoo_id": "33500"
+  },
+  {
+   "pick": 10,
+   "team": "Jaxon Sports Network",
+   "player": "C. Brown",
+   "position": "RB",
+   "nfl_team": "Cin",
+   "yahoo_id": "40196"
+  },
+  {
+   "pick": 11,
+   "team": "Your Team",
+   "player": "S. Barkley",
+   "position": "RB",
+   "nfl_team": "Phi",
+   "yahoo_id": "30972"
+  },
+  {
+   "pick": 12,
+   "team": "SponsoredByChipotle!",
+   "player": "J. Smith-Njigba",
+   "position": "WR",
+   "nfl_team": "Sea",
+   "yahoo_id": "40041"
+  },
+  {
+   "pick": 13,
+   "team": "SponsoredByChipotle!",
+   "player": "O. Hampton",
+   "position": "RB",
+   "nfl_team": "LAC",
+   "yahoo_id": "41807"
+  },
+  {
+   "pick": 14,
+   "team": "Your Team",
+   "player": "C. Lamb",
+   "position": "WR",
+   "nfl_team": "Dal",
+   "yahoo_id": "32687"
+  },
+  {
+   "pick": 15,
+   "team": "Jaxon Sports Network",
+   "player": "A. Brown",
+   "position": "WR",
+   "nfl_team": "NE",
+   "yahoo_id": "31883"
+  },
+  {
+   "pick": 16,
+   "team": "SryAboutTheChargers",
+   "player": "J. Jefferson",
+   "position": "WR",
+   "nfl_team": "Min",
+   "yahoo_id": "32692"
+  },
+  {
+   "pick": 17,
+   "team": "The Pots and Pans",
+   "player": "D. Henry",
+   "position": "RB",
+   "nfl_team": "Bal",
+   "yahoo_id": "29279"
+  },
+  {
+   "pick": 18,
+   "team": "Zulma's Optimal Team",
+   "player": "N. Collins",
+   "position": "WR",
+   "nfl_team": "Hou",
+   "yahoo_id": "33477"
+  },
+  {
+   "pick": 19,
+   "team": "The Mustache Magnum",
+   "player": "D. Achane",
+   "position": "RB",
+   "nfl_team": "Mia",
+   "yahoo_id": "40118"
+  },
+  {
+   "pick": 20,
+   "team": "Paul's Hot Sister",
+   "player": "B. Bowers",
+   "position": "TE",
+   "nfl_team": "LV",
+   "yahoo_id": "40878"
+  },
+  {
+   "pick": 21,
+   "team": "SanDiego Lost",
+   "player": "D. London",
+   "position": "WR",
+   "nfl_team": "Atl",
+   "yahoo_id": "33963"
+  },
+  {
+   "pick": 22,
+   "team": "Burrowing Owls",
+   "player": "G. Pickens",
+   "position": "WR",
+   "nfl_team": "Dal",
+   "yahoo_id": "34007"
+  },
+  {
+   "pick": 23,
+   "team": "Mary Sold Seperately",
+   "player": "T. Higgins",
+   "position": "WR",
+   "nfl_team": "Cin",
+   "yahoo_id": "32703"
+  },
+  {
+   "pick": 24,
+   "team": "Unsolicited Dak Pics",
+   "player": "A. Jeanty",
+   "position": "RB",
+   "nfl_team": "LV",
+   "yahoo_id": "41791"
+  },
+  {
+   "pick": 25,
+   "team": "Unsolicited Dak Pics",
+   "player": "C. Olave",
+   "position": "WR",
+   "nfl_team": "NO",
+   "yahoo_id": "33966"
+  },
+  {
+   "pick": 26,
+   "team": "Mary Sold Seperately",
+   "player": "J. Allen",
+   "position": "QB",
+   "nfl_team": "Buf",
+   "yahoo_id": "30977"
+  },
+  {
+   "pick": 27,
+   "team": "Burrowing Owls",
+   "player": "J. Williams",
+   "position": "RB",
+   "nfl_team": "Dal",
+   "yahoo_id": "33423"
+  },
+  {
+   "pick": 28,
+   "team": "SanDiego Lost",
+   "player": "M. Nabers",
+   "position": "WR",
+   "nfl_team": "NYG",
+   "yahoo_id": "40899"
+  },
+  {
+   "pick": 29,
+   "team": "Paul's Hot Sister",
+   "player": "D. Smith",
+   "position": "WR",
+   "nfl_team": "Phi",
+   "yahoo_id": "33398"
+  },
+  {
+   "pick": 30,
+   "team": "The Mustache Magnum",
+   "player": "K. Williams",
+   "position": "RB",
+   "nfl_team": "LAR",
+   "yahoo_id": "34120"
+  },
+  {
+   "pick": 31,
+   "team": "Zulma's Optimal Team",
+   "player": "B. Hall",
+   "position": "RB",
+   "nfl_team": "NYJ",
+   "yahoo_id": "33991"
+  },
+  {
+   "pick": 32,
+   "team": "The Pots and Pans",
+   "player": "T. Etienne Jr.",
+   "position": "RB",
+   "nfl_team": "NO",
+   "yahoo_id": "33413"
+  },
+  {
+   "pick": 33,
+   "team": "SryAboutTheChargers",
+   "player": "J. Love",
+   "position": "RB",
+   "nfl_team": "Ari",
+   "yahoo_id": "42625"
+  },
+  {
+   "pick": 34,
+   "team": "Jaxon Sports Network",
+   "player": "Z. Flowers",
+   "position": "WR",
+   "nfl_team": "Bal",
+   "yahoo_id": "40039"
+  },
+  {
+   "pick": 35,
+   "team": "Your Team",
+   "player": "T. McBride",
+   "position": "TE",
+   "nfl_team": "Ari",
+   "yahoo_id": "34010"
+  },
+  {
+   "pick": 36,
+   "team": "SponsoredByChipotle!",
+   "player": "T. McMillan",
+   "position": "WR",
+   "nfl_team": "Car",
+   "yahoo_id": "41793"
+  },
+  {
+   "pick": 37,
+   "team": "SponsoredByChipotle!",
+   "player": "L. McConkey",
+   "position": "WR",
+   "nfl_team": "LAC",
+   "yahoo_id": "40908"
+  },
+  {
+   "pick": 38,
+   "team": "Your Team",
+   "player": "R. Rice",
+   "position": "WR",
+   "nfl_team": "KC",
+   "yahoo_id": "40084"
+  },
+  {
+   "pick": 39,
+   "team": "Jaxon Sports Network",
+   "player": "D. Swift",
+   "position": "RB",
+   "nfl_team": "Chi",
+   "yahoo_id": "32705"
+  },
+  {
+   "pick": 40,
+   "team": "SryAboutTheChargers",
+   "player": "J. Waddle",
+   "position": "WR",
+   "nfl_team": "Den",
+   "yahoo_id": "33394"
+  },
+  {
+   "pick": 41,
+   "team": "The Pots and Pans",
+   "player": "D. Moore",
+   "position": "WR",
+   "nfl_team": "Buf",
+   "yahoo_id": "30994"
+  },
+  {
+   "pick": 42,
+   "team": "Zulma's Optimal Team",
+   "player": "G. Wilson",
+   "position": "WR",
+   "nfl_team": "NYJ",
+   "yahoo_id": "33965"
+  },
+  {
+   "pick": 43,
+   "team": "The Mustache Magnum",
+   "player": "C. Loveland",
+   "position": "TE",
+   "nfl_team": "Chi",
+   "yahoo_id": "41795"
+  },
+  {
+   "pick": 44,
+   "team": "Paul's Hot Sister",
+   "player": "E. Egbuka",
+   "position": "WR",
+   "nfl_team": "TB",
+   "yahoo_id": "41804"
+  },
+  {
+   "pick": 45,
+   "team": "SanDiego Lost",
+   "player": "L. Burden III",
+   "position": "WR",
+   "nfl_team": "Chi",
+   "yahoo_id": "41824"
+  },
+  {
+   "pick": 46,
+   "team": "Burrowing Owls",
+   "player": "C. Skattebo",
+   "position": "RB",
+   "nfl_team": "NYG",
+   "yahoo_id": "41922"
+  },
+  {
+   "pick": 47,
+   "team": "Mary Sold Seperately",
+   "player": "C. Watson",
+   "position": "WR",
+   "nfl_team": "GB",
+   "yahoo_id": "33989"
+  },
+  {
+   "pick": 48,
+   "team": "Unsolicited Dak Pics",
+   "player": "T. Warren",
+   "position": "TE",
+   "nfl_team": "Ind",
+   "yahoo_id": "41799"
+  },
+  {
+   "pick": 49,
+   "team": "Unsolicited Dak Pics",
+   "player": "T. McLaurin",
+   "position": "WR",
+   "nfl_team": "Was",
+   "yahoo_id": "31908"
+  },
+  {
+   "pick": 50,
+   "team": "Mary Sold Seperately",
+   "player": "T. Kraft",
+   "position": "TE",
+   "nfl_team": "GB",
+   "yahoo_id": "40102"
+  },
+  {
+   "pick": 51,
+   "team": "Burrowing Owls",
+   "player": "L. Jackson",
+   "position": "QB",
+   "nfl_team": "Bal",
+   "yahoo_id": "31002"
+  },
+  {
+   "pick": 52,
+   "team": "SanDiego Lost",
+   "player": "B. Irving",
+   "position": "RB",
+   "nfl_team": "TB",
+   "yahoo_id": "40993"
+  },
+  {
+   "pick": 53,
+   "team": "Paul's Hot Sister",
+   "player": "J. Williams",
+   "position": "WR",
+   "nfl_team": "Det",
+   "yahoo_id": "33967"
+  },
+  {
+   "pick": 54,
+   "team": "The Mustache Magnum",
+   "player": "R. Odunze",
+   "position": "WR",
+   "nfl_team": "Chi",
+   "yahoo_id": "40901"
+  },
+  {
+   "pick": 55,
+   "team": "Zulma's Optimal Team",
+   "player": "Q. Judkins",
+   "position": "RB",
+   "nfl_team": "Cle",
+   "yahoo_id": "41821"
+  },
+  {
+   "pick": 56,
+   "team": "The Pots and Pans",
+   "player": "P. Washington",
+   "position": "WR",
+   "nfl_team": "Jax",
+   "yahoo_id": "40234"
+  },
+  {
+   "pick": 57,
+   "team": "SryAboutTheChargers",
+   "player": "D. Montgomery",
+   "position": "RB",
+   "nfl_team": "Hou",
+   "yahoo_id": "31905"
+  },
+  {
+   "pick": 58,
+   "team": "Jaxon Sports Network",
+   "player": "B. Tuten",
+   "position": "RB",
+   "nfl_team": "Jax",
+   "yahoo_id": "41900"
+  },
+  {
+   "pick": 59,
+   "team": "Your Team",
+   "player": "J. Price",
+   "position": "RB",
+   "nfl_team": "Sea",
+   "yahoo_id": "42654"
+  },
+  {
+   "pick": 60,
+   "team": "SponsoredByChipotle!",
+   "player": "J. Warren",
+   "position": "RB",
+   "nfl_team": "Pit",
+   "yahoo_id": "34447"
+  },
+  {
+   "pick": 61,
+   "team": "SponsoredByChipotle!",
+   "player": "M. Lloyd",
+   "position": "RB",
+   "nfl_team": "GB",
+   "yahoo_id": "40971"
+  },
+  {
+   "pick": 62,
+   "team": "Your Team",
+   "player": "D. Adams",
+   "position": "WR",
+   "nfl_team": "LAR",
+   "yahoo_id": "27581"
+  },
+  {
+   "pick": 63,
+   "team": "Jaxon Sports Network",
+   "player": "M. Evans",
+   "position": "WR",
+   "nfl_team": "SF",
+   "yahoo_id": "27535"
+  },
+  {
+   "pick": 64,
+   "team": "SryAboutTheChargers",
+   "player": "S. LaPorta",
+   "position": "TE",
+   "nfl_team": "Det",
+   "yahoo_id": "40064"
+  },
+  {
+   "pick": 65,
+   "team": "The Pots and Pans",
+   "player": "D. Metcalf",
+   "position": "WR",
+   "nfl_team": "Pit",
+   "yahoo_id": "31896"
+  },
+  {
+   "pick": 66,
+   "team": "Zulma's Optimal Team",
+   "player": "D. Maye",
+   "position": "QB",
+   "nfl_team": "NE",
+   "yahoo_id": "40881"
+  },
+  {
+   "pick": 67,
+   "team": "The Mustache Magnum",
+   "player": "J. Hurts",
+   "position": "QB",
+   "nfl_team": "Phi",
+   "yahoo_id": "32723"
+  },
+  {
+   "pick": 68,
+   "team": "Paul's Hot Sister",
+   "player": "R. Stevenson",
+   "position": "RB",
+   "nfl_team": "NE",
+   "yahoo_id": "33508"
+  },
+  {
+   "pick": 69,
+   "team": "SanDiego Lost",
+   "player": "J. Burrow",
+   "position": "QB",
+   "nfl_team": "Cin",
+   "yahoo_id": "32671"
+  },
+  {
+   "pick": 70,
+   "team": "Burrowing Owls",
+   "player": "M. Harrison Jr.",
+   "position": "WR",
+   "nfl_team": "Ari",
+   "yahoo_id": "40893"
+  },
+  {
+   "pick": 71,
+   "team": "Mary Sold Seperately",
+   "player": "J. Dobbins",
+   "position": "RB",
+   "nfl_team": "Den",
+   "yahoo_id": "32725"
+  },
+  {
+   "pick": 72,
+   "team": "Unsolicited Dak Pics",
+   "player": "T. Henderson",
+   "position": "RB",
+   "nfl_team": "NE",
+   "yahoo_id": "41823"
+  },
+  {
+   "pick": 73,
+   "team": "Unsolicited Dak Pics",
+   "player": "J. Daniels",
+   "position": "QB",
+   "nfl_team": "Was",
+   "yahoo_id": "40896"
+  },
+  {
+   "pick": 74,
+   "team": "Mary Sold Seperately",
+   "player": "A. Pierce",
+   "position": "WR",
+   "nfl_team": "Ind",
+   "yahoo_id": "34008"
+  },
+  {
+   "pick": 75,
+   "team": "Burrowing Owls",
+   "player": "H. Fannin Jr.",
+   "position": "TE",
+   "nfl_team": "Cle",
+   "yahoo_id": "41877"
+  },
+  {
+   "pick": 76,
+   "team": "SanDiego Lost",
+   "player": "J. Brooks",
+   "position": "RB",
+   "nfl_team": "Car",
+   "yahoo_id": "40926"
+  },
+  {
+   "pick": 77,
+   "team": "Paul's Hot Sister",
+   "player": "C. Williams",
+   "position": "QB",
+   "nfl_team": "Chi",
+   "yahoo_id": "40900"
+  },
+  {
+   "pick": 78,
+   "team": "The Mustache Magnum",
+   "player": "B. Thomas Jr.",
+   "position": "WR",
+   "nfl_team": "Jax",
+   "yahoo_id": "40883"
+  },
+  {
+   "pick": 79,
+   "team": "Zulma's Optimal Team",
+   "player": "K. Pitts Sr.",
+   "position": "TE",
+   "nfl_team": "Atl",
+   "yahoo_id": "33392"
+  },
+  {
+   "pick": 80,
+   "team": "The Pots and Pans",
+   "player": "T. Lawrence",
+   "position": "QB",
+   "nfl_team": "Jax",
+   "yahoo_id": "33389"
+  },
+  {
+   "pick": 81,
+   "team": "SryAboutTheChargers",
+   "player": "J. Herbert",
+   "position": "QB",
+   "nfl_team": "LAC",
+   "yahoo_id": "32676"
+  },
+  {
+   "pick": 82,
+   "team": "Jaxon Sports Network",
+   "player": "C. Godwin Jr.",
+   "position": "WR",
+   "nfl_team": "TB",
+   "yahoo_id": "30197"
+  },
+  {
+   "pick": 83,
+   "team": "Your Team",
+   "player": "D. Prescott",
+   "position": "QB",
+   "nfl_team": "Dal",
+   "yahoo_id": "29369"
+  },
+  {
+   "pick": 84,
+   "team": "SponsoredByChipotle!",
+   "player": "C. Hubbard",
+   "position": "RB",
+   "nfl_team": "Car",
+   "yahoo_id": "33514"
+  },
+  {
+   "pick": 85,
+   "team": "SponsoredByChipotle!",
+   "player": "J. Mason",
+   "position": "RB",
+   "nfl_team": "Min",
+   "yahoo_id": "34320"
+  },
+  {
+   "pick": 86,
+   "team": "Your Team",
+   "player": "R. Dowdle",
+   "position": "RB",
+   "nfl_team": "Pit",
+   "yahoo_id": "33100"
+  },
+  {
+   "pick": 87,
+   "team": "Jaxon Sports Network",
+   "player": "B. Corum",
+   "position": "RB",
+   "nfl_team": "LAR",
+   "yahoo_id": "40962"
+  },
+  {
+   "pick": 88,
+   "team": "SryAboutTheChargers",
+   "player": "C. Tate",
+   "position": "WR",
+   "nfl_team": "Ten",
+   "yahoo_id": "42626"
+  },
+  {
+   "pick": 89,
+   "team": "The Pots and Pans",
+   "player": "Q. Johnston",
+   "position": "WR",
+   "nfl_team": "LAC",
+   "yahoo_id": "40051"
+  },
+  {
+   "pick": 90,
+   "team": "Zulma's Optimal Team",
+   "player": "M. Wilson",
+   "position": "WR",
+   "nfl_team": "Ari",
+   "yahoo_id": "40121"
+  },
+  {
+   "pick": 91,
+   "team": "The Mustache Magnum",
+   "player": "J. Downs",
+   "position": "WR",
+   "nfl_team": "Ind",
+   "yahoo_id": "40126"
+  },
+  {
+   "pick": 92,
+   "team": "Paul's Hot Sister",
+   "player": "D. Stribling",
+   "position": "WR",
+   "nfl_team": "SF",
+   "yahoo_id": "42655"
+  },
+  {
+   "pick": 93,
+   "team": "SanDiego Lost",
+   "player": "G. Kittle",
+   "position": "TE",
+   "nfl_team": "SF",
+   "yahoo_id": "30259"
+  },
+  {
+   "pick": 94,
+   "team": "Burrowing Owls",
+   "player": "Rams",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100014"
+  },
+  {
+   "pick": 95,
+   "team": "Mary Sold Seperately",
+   "player": "C. Rodriguez Jr.",
+   "position": "RB",
+   "nfl_team": "Jax",
+   "yahoo_id": "40231"
+  },
+  {
+   "pick": 96,
+   "team": "Unsolicited Dak Pics",
+   "player": "J. Reed",
+   "position": "WR",
+   "nfl_team": "GB",
+   "yahoo_id": "40063"
+  },
+  {
+   "pick": 97,
+   "team": "Unsolicited Dak Pics",
+   "player": "T. Pollard",
+   "position": "RB",
+   "nfl_team": "Ten",
+   "yahoo_id": "31960"
+  },
+  {
+   "pick": 98,
+   "team": "Mary Sold Seperately",
+   "player": "S. Diggs",
+   "position": "WR",
+   "nfl_team": "Was",
+   "yahoo_id": "28534"
+  },
+  {
+   "pick": 99,
+   "team": "Burrowing Owls",
+   "player": "K. Monangai",
+   "position": "RB",
+   "nfl_team": "Chi",
+   "yahoo_id": "42025"
+  },
+  {
+   "pick": 100,
+   "team": "SanDiego Lost",
+   "player": "J. Croskey-Merritt",
+   "position": "RB",
+   "nfl_team": "Was",
+   "yahoo_id": "42010"
+  },
+  {
+   "pick": 101,
+   "team": "Paul's Hot Sister",
+   "player": "J. Addison",
+   "position": "WR",
+   "nfl_team": "Min",
+   "yahoo_id": "40042"
+  },
+  {
+   "pick": 102,
+   "team": "The Mustache Magnum",
+   "player": "K. Concepcion",
+   "position": "WR",
+   "nfl_team": "Cle",
+   "yahoo_id": "42646"
+  },
+  {
+   "pick": 103,
+   "team": "Zulma's Optimal Team",
+   "player": "M. Golden",
+   "position": "WR",
+   "nfl_team": "GB",
+   "yahoo_id": "41808"
+  },
+  {
+   "pick": 104,
+   "team": "The Pots and Pans",
+   "player": "C. Sutton",
+   "position": "WR",
+   "nfl_team": "Den",
+   "yahoo_id": "31010"
+  },
+  {
+   "pick": 105,
+   "team": "SryAboutTheChargers",
+   "player": "B. Purdy",
+   "position": "QB",
+   "nfl_team": "SF",
+   "yahoo_id": "34218"
+  },
+  {
+   "pick": 106,
+   "team": "Jaxon Sports Network",
+   "player": "J. Dart",
+   "position": "QB",
+   "nfl_team": "NYG",
+   "yahoo_id": "41810"
+  },
+  {
+   "pick": 107,
+   "team": "Your Team",
+   "player": "Texans",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100034"
+  },
+  {
+   "pick": 108,
+   "team": "SponsoredByChipotle!",
+   "player": "B. Nix",
+   "position": "QB",
+   "nfl_team": "Den",
+   "yahoo_id": "40875"
+  },
+  {
+   "pick": 109,
+   "team": "SponsoredByChipotle!",
+   "player": "D. Kincaid",
+   "position": "TE",
+   "nfl_team": "Buf",
+   "yahoo_id": "40048"
+  },
+  {
+   "pick": 110,
+   "team": "Your Team",
+   "player": "M. Lemon",
+   "position": "WR",
+   "nfl_team": "Phi",
+   "yahoo_id": "42642"
+  },
+  {
+   "pick": 111,
+   "team": "Jaxon Sports Network",
+   "player": "I. Likely",
+   "position": "TE",
+   "nfl_team": "NYG",
+   "yahoo_id": "34095"
+  },
+  {
+   "pick": 112,
+   "team": "SryAboutTheChargers",
+   "player": "M. Pittman Jr.",
+   "position": "WR",
+   "nfl_team": "Pit",
+   "yahoo_id": "32704"
+  },
+  {
+   "pick": 113,
+   "team": "The Pots and Pans",
+   "player": "T. Kelce",
+   "position": "TE",
+   "nfl_team": "KC",
+   "yahoo_id": "26686"
+  },
+  {
+   "pick": 114,
+   "team": "Zulma's Optimal Team",
+   "player": "K. Gainwell",
+   "position": "RB",
+   "nfl_team": "TB",
+   "yahoo_id": "33538"
+  },
+  {
+   "pick": 115,
+   "team": "The Mustache Magnum",
+   "player": "R. Harvey",
+   "position": "RB",
+   "nfl_team": "Den",
+   "yahoo_id": "41845"
+  },
+  {
+   "pick": 116,
+   "team": "Paul's Hot Sister",
+   "player": "W. Robinson",
+   "position": "WR",
+   "nfl_team": "Ten",
+   "yahoo_id": "33998"
+  },
+  {
+   "pick": 117,
+   "team": "SanDiego Lost",
+   "player": "J. Coker",
+   "position": "WR",
+   "nfl_team": "Car",
+   "yahoo_id": "41293"
+  },
+  {
+   "pick": 118,
+   "team": "Burrowing Owls",
+   "player": "J. Love",
+   "position": "QB",
+   "nfl_team": "GB",
+   "yahoo_id": "32696"
+  },
+  {
+   "pick": 119,
+   "team": "Mary Sold Seperately",
+   "player": "A. Jones Sr.",
+   "position": "RB",
+   "nfl_team": "Min",
+   "yahoo_id": "30295"
+  },
+  {
+   "pick": 120,
+   "team": "Unsolicited Dak Pics",
+   "player": "R. White",
+   "position": "RB",
+   "nfl_team": "Was",
+   "yahoo_id": "34047"
+  },
+  {
+   "pick": 121,
+   "team": "Unsolicited Dak Pics",
+   "player": "M. Stafford",
+   "position": "QB",
+   "nfl_team": "LAR",
+   "yahoo_id": "9265"
+  },
+  {
+   "pick": 122,
+   "team": "Mary Sold Seperately",
+   "player": "Broncos",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100007"
+  },
+  {
+   "pick": 123,
+   "team": "Burrowing Owls",
+   "player": "W. Marks",
+   "position": "RB",
+   "nfl_team": "Hou",
+   "yahoo_id": "41902"
+  },
+  {
+   "pick": 124,
+   "team": "SanDiego Lost",
+   "player": "D. Goedert",
+   "position": "TE",
+   "nfl_team": "Phi",
+   "yahoo_id": "31019"
+  },
+  {
+   "pick": 125,
+   "team": "Paul's Hot Sister",
+   "player": "J. Goff",
+   "position": "QB",
+   "nfl_team": "Det",
+   "yahoo_id": "29235"
+  },
+  {
+   "pick": 126,
+   "team": "The Mustache Magnum",
+   "player": "K. Murray",
+   "position": "QB",
+   "nfl_team": "Min",
+   "yahoo_id": "31833"
+  },
+  {
+   "pick": 127,
+   "team": "Zulma's Optimal Team",
+   "player": "R. Doubs",
+   "position": "WR",
+   "nfl_team": "NE",
+   "yahoo_id": "34088"
+  },
+  {
+   "pick": 128,
+   "team": "The Pots and Pans",
+   "player": "M. Washington Jr.",
+   "position": "RB",
+   "nfl_team": "LV",
+   "yahoo_id": "42744"
+  },
+  {
+   "pick": 129,
+   "team": "SryAboutTheChargers",
+   "player": "K. Mitchell",
+   "position": "RB",
+   "nfl_team": "LAC",
+   "yahoo_id": "40641"
+  },
+  {
+   "pick": 130,
+   "team": "Jaxon Sports Network",
+   "player": "J. Jacobs",
+   "position": "RB",
+   "nfl_team": "GB",
+   "yahoo_id": "31856"
+  },
+  {
+   "pick": 131,
+   "team": "Your Team",
+   "player": "P. Mahomes",
+   "position": "QB",
+   "nfl_team": "KC",
+   "yahoo_id": "30123"
+  },
+  {
+   "pick": 132,
+   "team": "SponsoredByChipotle!",
+   "player": "X. Worthy",
+   "position": "WR",
+   "nfl_team": "KC",
+   "yahoo_id": "40877"
+  },
+  {
+   "pick": 133,
+   "team": "SponsoredByChipotle!",
+   "player": "D. Samuel Sr.",
+   "position": "WR",
+   "nfl_team": "SF",
+   "yahoo_id": "31868"
+  },
+  {
+   "pick": 134,
+   "team": "Your Team",
+   "player": "J. Meyers",
+   "position": "WR",
+   "nfl_team": "Jax",
+   "yahoo_id": "32231"
+  },
+  {
+   "pick": 135,
+   "team": "Jaxon Sports Network",
+   "player": "J. Coleman",
+   "position": "RB",
+   "nfl_team": "Den",
+   "yahoo_id": "42730"
+  },
+  {
+   "pick": 136,
+   "team": "SryAboutTheChargers",
+   "player": "J. Tyson",
+   "position": "WR",
+   "nfl_team": "NO",
+   "yahoo_id": "42630"
+  },
+  {
+   "pick": 137,
+   "team": "The Pots and Pans",
+   "player": "J. Lane",
+   "position": "WR",
+   "nfl_team": "Bal",
+   "yahoo_id": "42702"
+  },
+  {
+   "pick": 138,
+   "team": "Zulma's Optimal Team",
+   "player": "J. Johnson",
+   "position": "TE",
+   "nfl_team": "NO",
+   "yahoo_id": "33113"
+  },
+  {
+   "pick": 139,
+   "team": "The Mustache Magnum",
+   "player": "R. Shaheed",
+   "position": "WR",
+   "nfl_team": "Sea",
+   "yahoo_id": "34659"
+  },
+  {
+   "pick": 140,
+   "team": "Paul's Hot Sister",
+   "player": "M. Andrews",
+   "position": "TE",
+   "nfl_team": "Bal",
+   "yahoo_id": "31056"
+  },
+  {
+   "pick": 141,
+   "team": "SanDiego Lost",
+   "player": "M. Willis",
+   "position": "QB",
+   "nfl_team": "Mia",
+   "yahoo_id": "34042"
+  },
+  {
+   "pick": 142,
+   "team": "Burrowing Owls",
+   "player": "T. Bigsby",
+   "position": "RB",
+   "nfl_team": "Phi",
+   "yahoo_id": "40095"
+  },
+  {
+   "pick": 143,
+   "team": "Mary Sold Seperately",
+   "player": "A. Kamara",
+   "position": "RB",
+   "nfl_team": "NO",
+   "yahoo_id": "30180"
+  },
+  {
+   "pick": 144,
+   "team": "Unsolicited Dak Pics",
+   "player": "K. Shakir",
+   "position": "WR",
+   "nfl_team": "Buf",
+   "yahoo_id": "34104"
+  },
+  {
+   "pick": 145,
+   "team": "Unsolicited Dak Pics",
+   "player": "T. Tucker",
+   "position": "WR",
+   "nfl_team": "LV",
+   "yahoo_id": "40114"
+  },
+  {
+   "pick": 146,
+   "team": "Mary Sold Seperately",
+   "player": "K. Boutte",
+   "position": "WR",
+   "nfl_team": "Hou",
+   "yahoo_id": "40224"
+  },
+  {
+   "pick": 147,
+   "team": "Burrowing Owls",
+   "player": "D. Boston",
+   "position": "WR",
+   "nfl_team": "Cle",
+   "yahoo_id": "42661"
+  },
+  {
+   "pick": 148,
+   "team": "SanDiego Lost",
+   "player": "T. Allgeier",
+   "position": "RB",
+   "nfl_team": "Ari",
+   "yahoo_id": "34107"
+  },
+  {
+   "pick": 149,
+   "team": "Paul's Hot Sister",
+   "player": "T. Spears",
+   "position": "RB",
+   "nfl_team": "Ten",
+   "yahoo_id": "40119"
+  },
+  {
+   "pick": 150,
+   "team": "The Mustache Magnum",
+   "player": "A. Mitchell",
+   "position": "WR",
+   "nfl_team": "NYJ",
+   "yahoo_id": "40915"
+  },
+  {
+   "pick": 151,
+   "team": "Zulma's Optimal Team",
+   "player": "T. Shough",
+   "position": "QB",
+   "nfl_team": "NO",
+   "yahoo_id": "41825"
+  },
+  {
+   "pick": 152,
+   "team": "The Pots and Pans",
+   "player": "K. Allen",
+   "position": "WR",
+   "nfl_team": "Ind",
+   "yahoo_id": "26699"
+  },
+  {
+   "pick": 153,
+   "team": "SryAboutTheChargers",
+   "player": "J. Ferguson",
+   "position": "TE",
+   "nfl_team": "Dal",
+   "yahoo_id": "34085"
+  },
+  {
+   "pick": 154,
+   "team": "Jaxon Sports Network",
+   "player": "Ravens",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100033"
+  },
+  {
+   "pick": 155,
+   "team": "Your Team",
+   "player": "D. Wicks",
+   "position": "WR",
+   "nfl_team": "Phi",
+   "yahoo_id": "40201"
+  },
+  {
+   "pick": 156,
+   "team": "SponsoredByChipotle!",
+   "player": "Patriots",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100017"
+  },
+  {
+   "pick": 157,
+   "team": "SponsoredByChipotle!",
+   "player": "C. Ward",
+   "position": "QB",
+   "nfl_team": "Ten",
+   "yahoo_id": "41786"
+  },
+  {
+   "pick": 158,
+   "team": "Your Team",
+   "player": "Z. Charbonnet",
+   "position": "RB",
+   "nfl_team": "Sea",
+   "yahoo_id": "40075"
+  },
+  {
+   "pick": 159,
+   "team": "Jaxon Sports Network",
+   "player": "K. Black",
+   "position": "RB",
+   "nfl_team": "SF",
+   "yahoo_id": "42712"
+  },
+  {
+   "pick": 160,
+   "team": "SryAboutTheChargers",
+   "player": "J. McMillan",
+   "position": "WR",
+   "nfl_team": "TB",
+   "yahoo_id": "40954"
+  },
+  {
+   "pick": 161,
+   "team": "The Pots and Pans",
+   "player": "Seahawks",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100026"
+  },
+  {
+   "pick": 162,
+   "team": "Zulma's Optimal Team",
+   "player": "E. Johnson",
+   "position": "RB",
+   "nfl_team": "KC",
+   "yahoo_id": "42796"
+  },
+  {
+   "pick": 163,
+   "team": "The Mustache Magnum",
+   "player": "D. Schultz",
+   "position": "TE",
+   "nfl_team": "Hou",
+   "yahoo_id": "31107"
+  },
+  {
+   "pick": 164,
+   "team": "Paul's Hot Sister",
+   "player": "P. Bryant",
+   "position": "WR",
+   "nfl_team": "Den",
+   "yahoo_id": "41860"
+  },
+  {
+   "pick": 165,
+   "team": "SanDiego Lost",
+   "player": "R. Flournoy",
+   "position": "WR",
+   "nfl_team": "Dal",
+   "yahoo_id": "41087"
+  },
+  {
+   "pick": 166,
+   "team": "Burrowing Owls",
+   "player": "J. Nailor",
+   "position": "WR",
+   "nfl_team": "LV",
+   "yahoo_id": "34147"
+  },
+  {
+   "pick": 167,
+   "team": "Mary Sold Seperately",
+   "player": "I. Pacheco",
+   "position": "RB",
+   "nfl_team": "Det",
+   "yahoo_id": "34207"
+  },
+  {
+   "pick": 168,
+   "team": "Unsolicited Dak Pics",
+   "player": "T. Ferguson",
+   "position": "TE",
+   "nfl_team": "LAR",
+   "yahoo_id": "41831"
+  },
+  {
+   "pick": 169,
+   "team": "Unsolicited Dak Pics",
+   "player": "Eagles",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100021"
+  },
+  {
+   "pick": 170,
+   "team": "Mary Sold Seperately",
+   "player": "D. Claiborne",
+   "position": "RB",
+   "nfl_team": "Min",
+   "yahoo_id": "42820"
+  },
+  {
+   "pick": 171,
+   "team": "Burrowing Owls",
+   "player": "J. Jennings",
+   "position": "WR",
+   "nfl_team": "Min",
+   "yahoo_id": "32887"
+  },
+  {
+   "pick": 172,
+   "team": "SanDiego Lost",
+   "player": "Vikings",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100016"
+  },
+  {
+   "pick": 173,
+   "team": "Paul's Hot Sister",
+   "player": "Jaguars",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100030"
+  },
+  {
+   "pick": 174,
+   "team": "The Mustache Magnum",
+   "player": "Steelers",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100023"
+  },
+  {
+   "pick": 175,
+   "team": "Zulma's Optimal Team",
+   "player": "Packers",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100009"
+  },
+  {
+   "pick": 176,
+   "team": "The Pots and Pans",
+   "player": "B. Robinson",
+   "position": "RB",
+   "nfl_team": "Atl",
+   "yahoo_id": "34054"
+  },
+  {
+   "pick": 177,
+   "team": "SryAboutTheChargers",
+   "player": "Cowboys",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100006"
+  },
+  {
+   "pick": 178,
+   "team": "Jaxon Sports Network",
+   "player": "C. Allen",
+   "position": "WR",
+   "nfl_team": "KC",
+   "yahoo_id": "42773"
+  },
+  {
+   "pick": 179,
+   "team": "Your Team",
+   "player": "Chargers",
+   "position": "DEF",
+   "nfl_team": "",
+   "yahoo_id": "100024"
+  },
+  {
+   "pick": 180,
+   "team": "SponsoredByChipotle!",
+   "player": "T. Hunter",
+   "position": "WR",
+   "nfl_team": "Jax",
+   "yahoo_id": "99001"
+  }
+ ]
+}
