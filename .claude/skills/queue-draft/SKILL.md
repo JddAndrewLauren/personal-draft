@@ -1,6 +1,6 @@
 ---
 name: queue-draft
-description: Load the Yahoo draft-room Queue with the optimizer's top 3-4 available players so an expired clock autodrafts the app's choice instead of Yahoo's. Run right after a /watch-draft tick whenever the user's pick is 3 or fewer away, or when the user says "load the queue", "star the recs", or invokes /queue-draft.
+description: Load the Yahoo draft-room Queue with the optimizer's top 5-6 available players so an expired clock autodrafts the app's choice instead of Yahoo's. Run right after a /watch-draft tick whenever the user's pick is 3 or fewer away, or when the user says "load the queue", "star the recs", or invokes /queue-draft.
 ---
 
 # /queue-draft — star the optimizer's top picks in Yahoo's Queue
@@ -12,11 +12,14 @@ mock #3 (2026-09-04, `docs/mock-draft-2026-09-04c.md`).
 
 ## Steps
 
-1. **Get the targets** (repo root as cwd). Ask for 4 when the user's next two picks are
-   back-to-back (turn slots 1 and 12), else 3:
+1. **Get the targets** (repo root as cwd). Ask for 6 when the user's next two picks are
+   back-to-back (turn slots 1 and 12), else 5. The ranking is merit-only (no reach-my-pick
+   discount, commit 6d311fe), so the top targets are often taken before the pick; Yahoo drafts
+   the queue top-down skipping taken players, so depth is what keeps the queue from running
+   empty (mock #3 pick 108: all four targets gone, then a Yahoo autopick).
 
    ```bash
-   .venv/bin/python draft_cli.py recs --n 4 --ids
+   .venv/bin/python draft_cli.py recs --n 5 --ids
    ```
 
    One line per rec: `yahoo_id|name|pos`. The id can be blank (some DEFs); the script then finds
@@ -83,7 +86,7 @@ mock #3 (2026-09-04, `docs/mock-draft-2026-09-04c.md`).
    the Queue is ordered by star time, a target that was already queued from an earlier tick stays
    ahead of newer, higher-ranked targets. If the order is wrong, unstar and re-star the misplaced
    player (`.ys-removequeue[data-id=ID] button`, then `.ys-addqueue[data-id=ID] button`).
-5. **Report** one line: `queue: <#1>, <#2>, <#3>` plus any `already drafted` / `not found` notes.
+5. **Report** one line: `queue: <#1>, <#2>, ... <#5>` plus any `already drafted` / `not found` notes.
    `ON CLOCK - skipped` means run it again after the pick. If the Autodraft pill in the Queue header
    is filled (checkmark), the team is in autopick mode: click it once to turn autopick off and say
    so.
