@@ -685,11 +685,7 @@ def _rec_stats(r, state: DraftState) -> list:
 
 def _rec_detail(r, state: DraftState) -> str:
     p = r.player
-    my_pick = state.next_user_pick()
-    detail = f"Proj {p.projected_points:.0f} · Tier {p.tier} {p.position}"
-    if not state.on_the_clock and my_pick:
-        detail += f" · {r.availability:.0%} chance he reaches your pick #{my_pick}"
-    return detail
+    return f"Proj {p.projected_points:.0f} · Tier {p.tier} {p.position}"
 
 
 def _rec_button(container, r, state: DraftState, primary: bool):

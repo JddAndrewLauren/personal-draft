@@ -9,6 +9,7 @@ from optimizer import (
     DEFAULT_CONFIG,
     RecommendationContext,
     _action,
+    apply_multipliers,
     assign_tiers,
     assign_roster_slots,
     blend_value,
@@ -426,16 +427,17 @@ def test_action_rank0_reflects_urgency():
     assert _action(_rec(0.87, 0.4), 1, "STRONG", _ctx()) == "LIKELY AVAILABLE LATER"
 
 
-
+def test_availability_is_informational_only():
     players, settings = pool()
     prepare_players(players, settings)
     st = make_state(settings, user_slot=12)     # first pick at 12
     draft_by_adp(st, players, 3)
     recs = recommend(st, players)
-    top = recs[0]
-    assert top.availability > 0.5                # a player likely to reach pick 12
     best_value = max(recs, key=lambda r: r.value)
-    assert best_value.availability < 0.5         # the true best player will be gone
+    assert best_value.availability < 0.5         # the true best player will probably be gone...
+    # ...but availability is informational only: the ranking is score x need, no reach discount.
+    for r in recs[:10]:
+        assert abs(r.adjusted_score - round(apply_multipliers(r.score, r.roster_need, 1.0), 2)) < 0.02
 
 
 def test_merge_config_nested():

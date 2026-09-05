@@ -249,7 +249,7 @@ class SyncConflict:
 class Recommendation:
     player: Player
     score: float                 # value + λ * wait_cost
-    adjusted_score: float        # score × roster_need × availability
+    adjusted_score: float        # score × roster_need (availability is informational only)
     value: float
     vor: float
     survival: float              # P(available at the user's following pick | available at my pick)

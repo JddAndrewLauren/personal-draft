@@ -512,7 +512,9 @@ def recommend(state: DraftState, players: list, cfg: Optional[dict] = None) -> l
                 exp_alt, alt_p, alt_prob = expected_best(others)
                 wc = wait_cost(p.value, surv_next[p.player_id], exp_alt)
             score = p.value + lam * wc
-            adjusted = apply_multipliers(score, need.multiplier, 1.0 if on_clock else avail_now[p.player_id])
+            # Rank on merit only: availability at my pick is reported (rec.availability) but does not
+            # discount the score, so the list shows the best options rather than the safest reaches.
+            adjusted = apply_multipliers(score, need.multiplier, 1.0)
             adjusted -= need.penalty
             recs.append(Recommendation(
                 player=p, score=round(score, 2), adjusted_score=round(adjusted, 2), value=p.value,
@@ -592,9 +594,6 @@ def explain(rec: Recommendation, ctx: RecommendationContext, by_pos: dict, need:
     adp = effective_adp(p, ctx.total_picks)
     if p.adp is not None and adp + 4 < ctx.my_pick:
         out.append(f"Value falling: Yahoo ADP {adp:.0f} vs your pick #{ctx.my_pick}.")
-
-    if not ctx.on_the_clock and rec.availability < 0.999:
-        out.append(f"{rec.availability:.0%} chance he reaches your pick #{ctx.my_pick}.")
 
     if need.multiplier == 0:
         out.append(f"Blocked by roster rules: {need.reason}.")
